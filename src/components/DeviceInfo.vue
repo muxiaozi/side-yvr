@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import { NDataTable } from 'naive-ui'
-
 type Item = {
   name: string,
   value: string
