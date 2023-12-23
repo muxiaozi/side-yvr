@@ -54,6 +54,7 @@ const rowProps = ref((row: Action) => {
 });
 
 const data = ref(loadActions())
+const dialog = useDialog();
 
 function createColumns({
   run
@@ -126,7 +127,11 @@ function createColumns({
 }
 
 function addAction() {
-
+  dialog.info({
+    title: `添加操作`,
+    maskClosable: false,
+    content: () => h(EditAction, { onActionAdded: (action) => data.value.push(action) }),
+  });
 }
 
 function manageCommand() {

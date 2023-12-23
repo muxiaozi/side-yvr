@@ -169,7 +169,7 @@ function addCommand() {
   dialog.info({
     title: `添加命令`,
     maskClosable: false,
-    content: () => h(EditCommand, { style: { color: "red" }, onCommandAdded: (command) => data.value.push(command) }),
+    content: () => h(EditCommand, { onCommandAdded: (command) => data.value.push(command) }),
   });
 }
 

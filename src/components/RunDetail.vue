@@ -22,12 +22,12 @@ See dmesg for error reason.`"
 
 <script setup lang="ts">
 import { ref } from "vue";
+import { ActionRunner } from "../api/action";
 
 const current = ref(1);
 
 const props = defineProps<{
-  runId: number;
+  runner: ActionRunner;
 }>();
 
-// 从数据库中获取运行时细节
 </script>
