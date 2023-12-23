@@ -2,136 +2,109 @@
   <n-page-header title="操作" class="header">
     <template #extra>
       <n-space>
-        <n-button @click="add">新增</n-button>
-        <n-button @click="command">命令</n-button>
+        <n-button @click="addAction">新增</n-button>
+        <n-button @click="manageCommand">命令</n-button>
       </n-space>
     </template>
   </n-page-header>
 
   <n-divider style="margin: 0px" />
 
-  <n-data-table
-    :columns="columns"
-    :data="data"
-    :bordered="false"
-    :single-line="true"
-    :row-props="rowProps" />
-
-  <n-drawer
-    v-model:show="active"
-    placement="bottom"
-    :native-scrollbar="false"
-    resizable>
-    <n-drawer-content :title="currentRow.command">
-      {{ result }}
-    </n-drawer-content>
-  </n-drawer>
-
-  <n-dropdown
-    placement="bottom-start"
-    trigger="manual"
-    :width="100"
-    :x="x"
-    :y="y"
-    :options="options"
-    :show="showDropdown"
-    :on-clickoutside="(e) => (showDropdown = false)"
-    @select="onDropdownSelect" />
+  <n-data-table :columns="columns" :data="data" :bordered="false" :single-line="true" :row-props="rowProps" />
 </template>
 
 <script setup lang="ts">
-import { NButton, useDialog, NCode, NIcon, NTag, NSpace } from "naive-ui";
+import { NButton, useDialog, NCode, NIcon, NTag, NSpace, NButtonGroup } from "naive-ui";
 import type { DataTableColumns, DropdownOption } from "naive-ui";
 import { h, ref, nextTick, Ref } from "vue";
-import { loadCommands, Tag } from "../api/commands";
-import { Flash as FlashIcon } from "@vicons/ionicons5";
-import EditCommand from "./EditCommand.vue";
+import { LogoWindows as WindowsIcon, LogoApple as MacIcon, AddSharp as AddIcon, Flash as FlashIcon } from "@vicons/ionicons5";
+import { Linux as LinuxIcon, FileImport as FileImportIcon } from "@vicons/fa";
+import EditAction from "./EditAction.vue";
 import { useRouter } from "vue-router";
+import { Action, ActionRunner, loadActions, saveAction } from "../api/action";
+import { Platform } from "../api/command";
 
 const router = useRouter();
 
-type Command = {
-  id: number;
-  name: string;
-  command: string;
-  running: boolean;
-  editable: boolean;
-  category: Tag[];
-};
+const columns = createColumns({
+  run: (action: Action) => {
+    let runner = new ActionRunner(action);
+    console.log(runner.getSteps())
+    // runner.run();
+  }
+});
 
-let data = ref<Command[]>(
-  loadCommands().map((value) => {
-    return {
-      id: value.id,
-      name: value.name,
-      command: value.command,
-      running: false,
-      editable: !value.buildin,
-      category: value.tags,
-    };
-  })
-);
+const dropdownX = ref(0);
+const dropdownY = ref(0);
+const showDropdown = ref(false);
+let currentRow: Ref<Action>;
+const rowProps = ref((row: Action) => {
+  return {
+    onContextmenu: (e: MouseEvent) => {
+      e.preventDefault();
+      showDropdown.value = false;
+      currentRow = ref(row);
+      nextTick().then(() => {
+        showDropdown.value = true;
+        dropdownX.value = e.clientX;
+        dropdownY.value = e.clientY;
+      });
+    },
+  };
+});
 
-const createColumns = ({
-  run,
+const data = ref(loadActions())
+
+function createColumns({
+  run
 }: {
-  run: (row: Command) => Promise<void>;
-}): DataTableColumns<Command> => {
+  run: (action: Action) => void;
+}): DataTableColumns<Action> {
   return [
+    {
+      type: "expand",
+      renderExpand: (rowData) => {
+        let commands = "";
+        for (let command of rowData.commands) {
+          commands += command.command + "\n";
+        }
+        return h(NCode, { code: commands });
+      }
+    },
     {
       title: "名称",
       key: "name",
-      sorter: "default",
-      render(row) {
-        return h(
-          "span",
-          { style: { color: row.editable ? "black" : "gray" } },
-          row.name
-        );
-      },
+      sorter: "default"
     },
     {
-      title: "命令",
-      key: "command",
-      render(row) {
-        return h(NCode, { code: row.command });
-      },
-    },
-    {
-      title: "类别",
-      key: "category",
+      title: "平台",
+      key: "platforms",
       filterOptions: [
-        {
-          label: "内置",
-          value: "buildin",
-        },
-        {
-          label: "用户",
-          value: "user",
-        },
+        { label: "Windows", value: "windows" },
+        { label: "Mac", value: "mac" },
+        { label: "Linux", value: "linux" },
       ],
-      filter(value, row) {
-        return row.category.includes(value as Tag);
+      filter: (value, row) => {
+        return row.platforms.includes(value.toString() as Platform);
       },
       render(row) {
         return h(
-          NSpace,
-          { size: "small" },
-          row.category.map((value) => {
+          NButtonGroup,
+          null,
+          row.platforms.sort((a, b) => a.localeCompare(b)).map((value) => {
             return h(
-              NTag,
-              { type: "success" },
+              NButton,
+              { size: "small", focusable: false, circle: true, secondary: true },
               {
-                default: () => {
-                  switch (value) {
-                    case "buildin":
-                      return "内置";
-                    case "user":
-                      return "用户";
-                    default:
-                      return "";
+                icon: () => {
+                  if (value === "windows") {
+                    return h(NIcon, null, { default: () => h(WindowsIcon) });
+                  } else if (value === "mac") {
+                    return h(NIcon, null, { default: () => h(MacIcon) });
+                  } else if (value === "linux") {
+                    return h(NIcon, null, { default: () => h(LinuxIcon) });
                   }
-                },
+                }
               }
             );
           })
@@ -144,95 +117,22 @@ const createColumns = ({
       render(row) {
         return h(
           NButton,
-          {
-            size: "small",
-            round: true,
-            type: "primary",
-            loading: row.running,
-            onClick: () => run(row),
-          },
-          { default: () => "运行", icon: () => h(NIcon, () => h(FlashIcon)) }
+          { size: "small", round: true, onClick: () => run(row) },
+          { default: () => "运行", icon: () => h(NIcon, null, { default: () => h(FlashIcon) }) }
         );
       },
     },
   ];
-};
-
-const dialog = useDialog();
-const columns = createColumns({
-  async run(row: Command) {
-    row.running = true;
-    active.value = true;
-    try {
-      let rr = await adb.runCommand(row.command);
-      console.log(rr);
-      result.value = rr;
-    } catch (e) {
-      result.value = JSON.stringify(e);
-    }
-    row.running = false;
-  },
-});
-
-const active = ref(false);
-const options = ref<DropdownOption[]>([
-  {
-    label: "编辑",
-    key: "edit",
-  },
-  {
-    label: () => h("span", { style: { color: "red" } }, "删除"),
-    key: "delete",
-  },
-]);
-const x = ref(0);
-const y = ref(0);
-let result = ref("");
-const showDropdown = ref(false);
-let currentRow: Ref<Command>;
-const rowProps = ref((row: Command) => {
-  return {
-    onContextmenu: (e: MouseEvent) => {
-      if (row.editable) {
-        e.preventDefault();
-        showDropdown.value = false;
-        currentRow = ref(row);
-        nextTick().then(() => {
-          showDropdown.value = true;
-          x.value = e.clientX;
-          y.value = e.clientY;
-        });
-      }
-    },
-  };
-});
-
-function onDropdownSelect(key: string | number, option: DropdownOption) {
-  showDropdown.value = false;
-  if (key === "edit") {
-    dialog.info({
-      title: `编辑命令`,
-      content: currentRow.value.command,
-    });
-  } else if (key === "delete") {
-    dialog.warning({
-      title: `删除命令`,
-      content: currentRow.value.command,
-    });
-  }
 }
 
-function add() {
-  dialog.info({
-    title: `添加命令`,
-    maskClosable: false,
-    content: () => h(EditCommand, { style: { color: "red" } }),
-  });
+function addAction() {
+
 }
 
-function command() {
+function manageCommand() {
   router.push("/command");
 }
+
 </script>
 
 <style scoped lang="css">

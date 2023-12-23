@@ -3,7 +3,7 @@
 	"logo": "icon.png",
 	"preload": "preload.js",
 	"development": {
-		"main": "http://127.0.0.1:5173/"
+		"main": "http://localhost:5173/"
 	},
 	"platform": [
 		"win32"
