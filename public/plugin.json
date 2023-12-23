@@ -1,0 +1,74 @@
+{
+	"main": "index.html",
+	"logo": "icon.png",
+	"preload": "preload.js",
+	"development": {
+		"main": "http://127.0.0.1:5173/"
+	},
+	"platform": [
+		"win32"
+	],
+	"features": [
+		{
+			"code": "sideyvr",
+			"explain": "YVR开发者工具，让你的工作更高效",
+			"cmds": [
+				"sideyvr",
+				"YVR开发者工具"
+			]
+		},
+        {
+            "code": "install-apk",
+            "explain": "安装应用程序到设备中",
+            "cmds": [
+                {
+                    "type": "files",
+                    "label": "安装到设备",
+                    "fileType": "file",
+                    "match": "/.*\\.apk/",
+                    "minLength": 1
+                }
+            ]
+        },
+        {
+            "code": "analyze-apk",
+            "explain": "解析APK文件",
+            "cmds": [
+                {
+                    "type": "files",
+                    "label": "解析APK",
+                    "fileType": "file",
+                    "match": "/.*\\.apk/",
+                    "minLength": 1,
+                    "maxLength": 1
+                }
+            ]
+        },
+        {
+            "code": "upload-file",
+            "explain": "上传文件到设备中",
+            "cmds": [
+                {
+                    "type": "files",
+                    "label": "上传到设备",
+                    "fileType": "file",
+                    "match": "/.*/",
+                    "minLength": 1
+                }
+            ]
+        },
+        {
+            "code": "detect-sn",
+            "explain": "识别设备序列号",
+            "cmds": [
+                {
+                    "type": "regex",
+                    "label": "识别设备序列号",
+                    "match": "/(D2|ZT).*/",
+                    "minLength": 12,
+                    "maxLength": 18
+                }
+            ]
+        }
+	]
+}

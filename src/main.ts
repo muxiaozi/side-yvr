@@ -3,22 +3,41 @@ import './assets/main.css'
 import { createApp } from 'vue'
 import App from './App.vue'
 import naive from 'naive-ui'
-import { createRouter, createWebHashHistory } from 'vue-router'
+import router from './router'
+import { getAppInfo } from './api/app'
 
-import DeviceInfo from './components/DeviceInfo.vue'
-import BasicOperation from './components/BasicOperation.vue'
-import ProfessionalOperation from './components/ProfessionalOperation.vue'
-import Settings from './components/Settings.vue'
+// 进入插件
+utools.onPluginEnter(async ({ code, type, payload }) => {
+    console.log('用户进入插件', code, type, payload)
+    switch (code) {
+        case 'sideyvr': {
+            console.log('进入主页')
+            await adb.getDevices()
+            // let packages = await adb.getPackageListByType('system')
+            // console.log(packages)
 
-const routes = [
-    { path: '/', component: DeviceInfo },
-    { path: '/basic-operation', component: BasicOperation },
-    { path: '/professional-operation', component: ProfessionalOperation },
-    { path: '/settings', component: Settings },
-]
-const router = createRouter({
-    history: createWebHashHistory(),
-    routes,
+            // let appInfo = await adb.getAppInfo(packages[0])
+            // console.log(appInfo)
+            // getAppInfo('com.autonavi.minimap')
+            break
+        }
+        case 'analyze-apk': {
+            // await adb.getDevices()
+            break
+        }
+        case 'install-apk': {
+            break
+        }
+        case 'upload-file':
+            break
+        case 'detect-sn':
+            break
+    }
+})
+
+// 退出插件
+utools.onPluginOut(() => {
+    console.log('用户退出插件')
 })
 
 const app = createApp(App)
