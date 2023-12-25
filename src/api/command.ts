@@ -4,8 +4,8 @@ export type Command = {
   id: number;
   name: string;
   command: string;
-  platforms: Array<Platform>;
-  tags: Array<string>;
+  platforms: Platform[];
+  tags: string[];
 };
 
 function generateCommandId() {

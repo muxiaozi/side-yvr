@@ -40,6 +40,7 @@ import {
   NTag,
   NSpace,
   NButtonGroup,
+  NScrollbar,
 } from "naive-ui";
 import type { DataTableColumns, DropdownOption } from "naive-ui";
 import { h, ref, nextTick, Ref, toRaw } from "vue";
@@ -111,12 +112,13 @@ function onDropdownSelect(key: string | number, option: DropdownOption) {
   showDropdown.value = false;
   if (key === "edit") {
     dialog.info({
-      title: `编辑操作`,
+      title: "编辑操作",
       content: () => h(EditAction, { action: currentRow.value }),
+      style: { width: "auto" },
     });
   } else if (key === "delete") {
     dialog.warning({
-      title: `删除操作`,
+      title: "删除操作",
       content: currentRow.value.name,
       onPositiveClick: () => {
         removeAction(currentRow.value.id);
@@ -139,11 +141,24 @@ function createColumns({
     {
       type: "expand",
       renderExpand: (rowData) => {
-        let commands = "";
+        let code = "";
         for (let command of rowData.commands) {
-          commands += command + "\n";
+          code += command.command + "\n";
         }
-        return h(NCode, { code: commands });
+        return h(
+          NScrollbar,
+          {
+            xScrollable: true,
+          },
+          {
+            default: () =>
+              h(NCode, {
+                code,
+                showLineNumbers: true,
+                language: "javascript",
+              }),
+          }
+        );
       },
     },
     {
@@ -245,13 +260,14 @@ function createColumns({
 
 function addAction() {
   dialog.info({
-    title: `添加操作`,
+    title: "添加操作",
     maskClosable: false,
     content: () =>
       h(EditAction, {
         onActionAdded: (action) =>
           data.value.push(Object.assign({}, action, { key: action.id })),
       }),
+    style: { width: "auto" },
   });
 }
 

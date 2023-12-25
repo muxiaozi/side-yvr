@@ -1,22 +1,31 @@
 import { getPlatform } from "./app";
 import { Platform } from "./command";
 
+export type ActionCommand = {
+  command: string;
+  allow_fail: boolean;
+};
+
+type RunStatus = "wait" | "process" | "finish" | "error";
+
 export type Action = {
   id: number;
   name: string;
-  commands: Array<string>;
-  platforms: Array<Platform>;
-  tags: Array<string>;
+  commands: ActionCommand[];
+  platforms: Platform[];
+  tags: string[];
 };
 
-type Step = {
+export type Step = {
   index: number;
   command: string;
   result: string;
-  status: "wait" | "process" | "finish" | "error";
+  status: RunStatus;
 };
 
 export class ActionRunner {
+  private currentIndex: number = 0;
+  private currentStatus: RunStatus = "wait";
   private steps: Array<Step> = [];
   private action: Action;
   private running: boolean = false;
@@ -36,7 +45,7 @@ export class ActionRunner {
     this.steps = action.commands.map((command, index) => {
       return {
         index,
-        command,
+        command: command.command,
         result: "",
         status: "wait",
       };

@@ -39,9 +39,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, toRaw } from "vue";
+import { ref } from "vue";
 import { Command, saveCommand } from "../api/command";
 import { useDialogReactiveList } from "naive-ui";
+import { deepClone } from "../api/app";
 
 const props = defineProps<{
   command?: Command;
@@ -64,7 +65,7 @@ if (props.command) {
 
 function onSubmit(e: MouseEvent) {
   e.preventDefault();
-  saveCommand(toRaw(formValue.value));
+  saveCommand(deepClone(formValue.value));
   if (props.command) {
     Object.assign(props.command, formValue.value);
   }

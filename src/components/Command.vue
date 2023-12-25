@@ -178,12 +178,12 @@ function onDropdownSelect(key: string | number, option: DropdownOption) {
   showDropdown.value = false;
   if (key === "edit") {
     dialog.info({
-      title: `编辑命令`,
+      title: "编辑命令",
       content: () => h(EditCommand, { command: currentRow.value }),
     });
   } else if (key === "delete") {
     dialog.warning({
-      title: `删除命令`,
+      title: "删除命令",
       content: currentRow.value.command,
       onPositiveClick: () => {
         removeCommand(currentRow.value.id);
@@ -197,14 +197,14 @@ function onDropdownSelect(key: string | number, option: DropdownOption) {
 
 function importCommand() {
   dialog.info({
-    title: `导入命令`,
+    title: "导入命令",
     maskClosable: false,
   });
 }
 
 function addCommand() {
   dialog.info({
-    title: `添加命令`,
+    title: "添加命令",
     maskClosable: false,
     content: () =>
       h(EditCommand, { onCommandAdded: (command) => data.value.push(command) }),

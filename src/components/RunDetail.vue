@@ -1,5 +1,18 @@
 <template>
-  <n-steps vertical :current="(current as number)" status="finish">
+  <n-steps vertical :current="current" status="finish">
+    <n-step v-for="step in steps" :title="step.command">
+      <n-ellipsis
+        v-if="step.result.length > 0"
+        expand-trigger="click"
+        line-clamp="1"
+        :tooltip="false"
+      >
+        <n-code :code="step.result" language="javascript" />
+      </n-ellipsis>
+    </n-step>
+  </n-steps>
+
+  <n-steps vertical :current="current" status="finish">
     <n-step title="adb devices">
       <n-ellipsis expand-trigger="click" line-clamp="1" :tooltip="false">
         <n-code
@@ -9,7 +22,9 @@
         />
       </n-ellipsis>
     </n-step>
+
     <n-step title="adb wait-for-device" />
+
     <n-step title="adb shell setprop service.dev.mode 1">
       <n-ellipsis expand-trigger="click" line-clamp="1" :tooltip="false">
         <n-code
@@ -24,8 +39,9 @@ See dmesg for error reason.`"
 
 <script setup lang="ts">
 import { ref } from "vue";
-import { ActionRunner } from "../api/action";
+import { ActionRunner, Step } from "../api/action";
 
+const steps = ref<Step[]>();
 const current = ref(1);
 
 const props = defineProps<{

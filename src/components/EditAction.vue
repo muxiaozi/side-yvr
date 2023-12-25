@@ -9,7 +9,24 @@
         show-sort-button
         placeholder="请输入"
         :min="1"
-      />
+        :on-create="onCreateCommand"
+      >
+        <template #default="{ value }">
+          <n-space :wrap="false">
+            <n-checkbox label="可失败" v-model:checked="value.allow_fail" />
+            <n-auto-complete
+              v-model:value="value.command"
+              placeholder="请输入命令"
+              type="text"
+              :input-props="{
+                autocomplete: 'disabled',
+              }"
+              :options="completeCommand(value.command)"
+              clearable
+            />
+          </n-space>
+        </template>
+      </n-dynamic-input>
     </n-form-item>
     <n-form-item label="平台">
       <n-checkbox-group v-model:value="formValue.platforms">
@@ -44,9 +61,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, toRaw, toValue } from "vue";
+import { ref } from "vue";
 import { useDialogReactiveList } from "naive-ui";
-import { Action, saveAction } from "../api/action";
+import { Action, saveAction, ActionCommand } from "../api/action";
+import { loadCommands } from "../api/command";
+import { deepClone, getPlatform } from "../api/app";
 
 const props = defineProps<{
   action?: Action;
@@ -63,13 +82,29 @@ const formValue = ref<Action>({
   tags: [],
 });
 
+const platform = getPlatform();
+const savedCommands = loadCommands().filter((command) =>
+  command.platforms.includes(platform)
+);
+
+function completeCommand(inputCommand: string) {
+  return savedCommands
+    .filter((command) => command.command.includes(inputCommand))
+    .map((command) => {
+      return {
+        label: command.command,
+        value: command.command,
+      };
+    });
+}
+
 if (props.action) {
   Object.assign(formValue.value, props.action);
 }
 
 function onSubmit(e: MouseEvent) {
   e.preventDefault();
-  saveAction(toRaw(formValue.value));
+  saveAction(deepClone(formValue.value));
   if (props.action) {
     Object.assign(props.action, formValue.value);
   }
@@ -86,5 +121,12 @@ function onCancel(e: MouseEvent) {
   for (let dialog of dialogs.value) {
     dialog.destroy();
   }
+}
+
+function onCreateCommand(index: number) {
+  return {
+    command: "",
+    allow_fail: false,
+  };
 }
 </script>
