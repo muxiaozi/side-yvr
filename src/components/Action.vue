@@ -88,7 +88,7 @@ const data = ref(
   loadActions().map((value, index) => {
     return {
       ...value,
-      key: index,
+      key: value.id,
     };
   })
 );
