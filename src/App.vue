@@ -24,16 +24,14 @@
         :collapsed="collapsed"
         show-trigger
         @collapse="collapsed = true"
-        @expand="collapsed = false"
-      >
+        @expand="collapsed = false">
         <n-menu
           :collapsed="collapsed"
           :collapsed-width="64"
           :collapsed-icon-size="22"
           :options="menuOptions"
           mode="vertical"
-          v-model:value="activeKey"
-        />
+          v-model:value="activeKey" />
       </n-layout-sider>
       <n-layout>
         <n-dialog-provider>
@@ -77,6 +75,11 @@ function renderIcon(icon: Component) {
 
 const menuOptions: MenuOption[] = [
   {
+    label: () => h(RouterLink, { to: "/" }, () => "测试"),
+    key: "run-detail",
+    icon: renderIcon(DeviceIcon),
+  },
+  {
     label: () => h(RouterLink, { to: "/device" }, () => "设备"),
     key: "device",
     icon: renderIcon(DeviceIcon),
@@ -100,7 +103,7 @@ const menuOptions: MenuOption[] = [
 
 const activeKey = ref("device");
 const collapsed = ref(false);
-useRouter().replace("/device");
+// useRouter().replace("/device");
 </script>
 
 <style scoped>

@@ -15,8 +15,7 @@
     :data="data"
     :bordered="false"
     :single-line="true"
-    :row-props="rowProps"
-  />
+    :row-props="rowProps" />
 
   <n-dropdown
     placement="bottom-start"
@@ -27,8 +26,7 @@
     :options="options"
     :show="showDropdown"
     :on-clickoutside="(e) => (showDropdown = false)"
-    @select="onDropdownSelect"
-  />
+    @select="onDropdownSelect" />
 </template>
 
 <script setup lang="ts">
@@ -277,8 +275,10 @@ function manageCommand() {
 
 function runAction(action: Action) {
   let runner = new ActionRunner(action);
-  console.log(runner.getSteps());
-  // runner.run();
+  runner.onStepChanged((step) => {
+    console.log("step: ", step);
+  });
+  runner.run();
 }
 
 function showLog(action: Action) {
