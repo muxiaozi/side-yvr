@@ -10,22 +10,52 @@
 
   <n-divider style="margin: 0px" />
 
-  <n-data-table :columns="columns" :data="data" :bordered="false" :single-line="true" :row-props="rowProps" />
+  <n-data-table
+    :columns="columns"
+    :data="data"
+    :bordered="false"
+    :single-line="true"
+    :row-props="rowProps"
+  />
 
-  <n-dropdown placement="bottom-start" trigger="manual" :width="100" :x="dropdownX" :y="dropdownY" :options="options"
-    :show="showDropdown" :on-clickoutside="(e) => (showDropdown = false)" @select="onDropdownSelect" />
+  <n-dropdown
+    placement="bottom-start"
+    trigger="manual"
+    :width="100"
+    :x="dropdownX"
+    :y="dropdownY"
+    :options="options"
+    :show="showDropdown"
+    :on-clickoutside="(e) => (showDropdown = false)"
+    @select="onDropdownSelect"
+  />
 </template>
 
 <script setup lang="ts">
-import { NButton, useDialog, NCode, NIcon, NTag, NSpace, NButtonGroup } from "naive-ui";
+import {
+  NButton,
+  useDialog,
+  NCode,
+  NIcon,
+  NTag,
+  NSpace,
+  NButtonGroup,
+} from "naive-ui";
 import type { DataTableColumns, DropdownOption } from "naive-ui";
 import { h, ref, nextTick, Ref, toRaw } from "vue";
-import { LogoWindows as WindowsIcon, LogoApple as MacIcon, AddSharp as AddIcon, Flash as FlashIcon } from "@vicons/ionicons5";
+import {
+  LogoWindows as WindowsIcon,
+  LogoApple as MacIcon,
+  AddSharp as AddIcon,
+  Flash as FlashIcon,
+  ReceiptOutline as RunLogIcon,
+} from "@vicons/ionicons5";
 import { Linux as LinuxIcon, FileImport as FileImportIcon } from "@vicons/fa";
 import EditAction from "./EditAction.vue";
 import { useRouter } from "vue-router";
-import { Action, ActionRunner, loadActions, saveAction, removeAction } from "../api/action";
+import { Action, ActionRunner, loadActions, removeAction } from "../api/action";
 import { Platform } from "../api/command";
+import { getPlatform } from "../api/app";
 
 const router = useRouter();
 
@@ -33,14 +63,7 @@ type RowAction = Action & {
   key: number;
 };
 
-const columns = createColumns({
-  run: (action: Action) => {
-    let runner = new ActionRunner(action);
-    console.log(runner.getSteps())
-    // runner.run();
-  }
-});
-
+const columns = createColumns({ runAction, showLog });
 const dropdownX = ref(0);
 const dropdownY = ref(0);
 const showDropdown = ref(false);
@@ -60,14 +83,17 @@ const rowProps = ref((row: Action) => {
   };
 });
 
-const data = ref(loadActions().map((value, index) => {
-  return {
-    ...value,
-    key: index,
-  };
-}));
+const data = ref(
+  loadActions().map((value, index) => {
+    return {
+      ...value,
+      key: index,
+    };
+  })
+);
 
 const dialog = useDialog();
+const platform = getPlatform();
 
 // 下拉菜单
 const options = ref<DropdownOption[]>([
@@ -85,12 +111,12 @@ function onDropdownSelect(key: string | number, option: DropdownOption) {
   showDropdown.value = false;
   if (key === "edit") {
     dialog.info({
-      title: `编辑命令`,
+      title: `编辑操作`,
       content: () => h(EditAction, { action: currentRow.value }),
     });
   } else if (key === "delete") {
     dialog.warning({
-      title: `删除命令`,
+      title: `删除操作`,
       content: currentRow.value.name,
       onPositiveClick: () => {
         removeAction(currentRow.value.id);
@@ -103,9 +129,11 @@ function onDropdownSelect(key: string | number, option: DropdownOption) {
 }
 
 function createColumns({
-  run
+  runAction,
+  showLog,
 }: {
-  run: (action: Action) => void;
+  runAction: (action: Action) => void;
+  showLog: (action: Action) => void;
 }): DataTableColumns<RowAction> {
   return [
     {
@@ -116,12 +144,12 @@ function createColumns({
           commands += command + "\n";
         }
         return h(NCode, { code: commands });
-      }
+      },
     },
     {
       title: "名称",
       key: "name",
-      sorter: "default"
+      sorter: "default",
     },
     {
       title: "平台",
@@ -135,27 +163,35 @@ function createColumns({
         return row.platforms.includes(value.toString() as Platform);
       },
       render(row) {
-        return h(
-          NButtonGroup,
-          null,
-          row.platforms.sort((a, b) => a.localeCompare(b)).map((value) => {
-            return h(
-              NButton,
-              { size: "small", focusable: false, circle: true, secondary: true },
-              {
-                icon: () => {
-                  if (value === "windows") {
-                    return h(NIcon, null, { default: () => h(WindowsIcon) });
-                  } else if (value === "mac") {
-                    return h(NIcon, null, { default: () => h(MacIcon) });
-                  } else if (value === "linux") {
-                    return h(NIcon, null, { default: () => h(LinuxIcon) });
+        return h(NButtonGroup, null, {
+          default: () =>
+            row.platforms
+              .sort((a, b) => a.localeCompare(b))
+              .map((value) => {
+                return h(
+                  NButton,
+                  {
+                    size: "small",
+                    focusable: false,
+                    circle: true,
+                    secondary: true,
+                  },
+                  {
+                    icon: () => {
+                      if (value === "windows") {
+                        return h(NIcon, null, {
+                          default: () => h(WindowsIcon),
+                        });
+                      } else if (value === "mac") {
+                        return h(NIcon, null, { default: () => h(MacIcon) });
+                      } else if (value === "linux") {
+                        return h(NIcon, null, { default: () => h(LinuxIcon) });
+                      }
+                    },
                   }
-                }
-              }
-            );
-          })
-        );
+                );
+              }),
+        });
       },
     },
     {
@@ -165,9 +201,12 @@ function createColumns({
         return h(
           NSpace,
           { size: "small" },
-          row.tags?.map((value) => {
-            return h(NTag, { type: "success" }, value);
-          })
+          {
+            default: () =>
+              row.tags?.map((value) => {
+                return h(NTag, { type: "success" }, { default: () => value });
+              }),
+          }
         );
       },
     },
@@ -175,11 +214,30 @@ function createColumns({
       title: "操作",
       key: "action",
       render(row) {
-        return h(
-          NButton,
-          { size: "small", round: true, onClick: () => run(row) },
-          { default: () => "运行", icon: () => h(NIcon, null, { default: () => h(FlashIcon) }) }
-        );
+        return h(NButtonGroup, null, {
+          default: () => [
+            h(
+              NButton,
+              {
+                size: "small",
+                round: true,
+                onClick: () => runAction(row),
+                disabled: !row.platforms.includes(platform),
+              },
+              { icon: () => h(NIcon, null, { default: () => h(FlashIcon) }) }
+            ),
+            h(
+              NButton,
+              {
+                size: "small",
+                round: true,
+                onClick: () => showLog(row),
+                disabled: !row.platforms.includes(platform),
+              },
+              { icon: () => h(NIcon, null, { default: () => h(RunLogIcon) }) }
+            ),
+          ],
+        });
       },
     },
   ];
@@ -189,7 +247,11 @@ function addAction() {
   dialog.info({
     title: `添加操作`,
     maskClosable: false,
-    content: () => h(EditAction, { onActionAdded: (action) => data.value.push(Object.assign({}, action, { key: action.id })) }),
+    content: () =>
+      h(EditAction, {
+        onActionAdded: (action) =>
+          data.value.push(Object.assign({}, action, { key: action.id })),
+      }),
   });
 }
 
@@ -197,6 +259,15 @@ function manageCommand() {
   router.push("/command");
 }
 
+function runAction(action: Action) {
+  let runner = new ActionRunner(action);
+  console.log(runner.getSteps());
+  // runner.run();
+}
+
+function showLog(action: Action) {
+  router.push(`/log/${action.id}`);
+}
 </script>
 
 <style scoped lang="css">

@@ -1,44 +1,44 @@
-const { ADB } = require('appium-adb')
+const { ADB } = require("appium-adb");
 
 class AdbApi {
-    adb
-    
-    constructor() {
-        this.init()
-    }
+  adb;
 
-    async init() {
-        this.adb = await ADB.createADB()
-    }
+  constructor() {
+    this.init();
+  }
 
-    async installApk(apkPath) {
-        await this.adb?.install(apkPath, {
-            grantPermissions: true,
-        })
-    }
+  async init() {
+    this.adb = await ADB.createADB();
+  }
 
-    async getDevices() {
-        const devices = await this.adb.getConnectedDevices()
-        console.log(devices)
-        return devices
-    }
+  async installApk(apkPath) {
+    await this.adb.install(apkPath, {
+      grantPermissions: true,
+    });
+  }
 
-    async getDeviceInfo() {
-        const text = await this.adb.shell('ip addr')
-        console.log(text)
-    }
+  async getDevices() {
+    const devices = await this.adb.getConnectedDevices();
+    console.log(devices);
+    return devices;
+  }
 
-    async getAppList() {
-        const list = await this.adb.startLogcat({
-            debug: true,
-        })
-        console.log(list)
-    }
+  async getDeviceInfo() {
+    const text = await this.adb.shell("ip addr");
+    console.log(text);
+  }
 
-    async startLogcat() {
-        await this.adb.startLogcat()
-        this.adb.setLogcatListener(line => console.log(line))
-    }
+  async getAppList() {
+    const list = await this.adb.startLogcat({
+      debug: true,
+    });
+    console.log(list);
+  }
+
+  async startLogcat() {
+    await this.adb.startLogcat();
+    this.adb.setLogcatListener((line) => console.log(line));
+  }
 }
 
-window.adb = new AdbApi()
+window.adb = new AdbApi();

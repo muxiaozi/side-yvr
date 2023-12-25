@@ -1,15 +1,15 @@
 export type Platform = "windows" | "mac" | "linux";
 
-export interface Command {
+export type Command = {
   id: number;
   name: string;
   command: string;
   platforms: Array<Platform>;
   tags: Array<string>;
-}
+};
 
 function generateCommandId() {
-  let id = utools.dbStorage.getItem("maxCommandId") as number || 0;
+  let id = (utools.dbStorage.getItem("maxCommandId") as number) || 0;
   id += 1;
   utools.dbStorage.setItem("maxCommandId", id);
   return id;
@@ -22,7 +22,8 @@ export function loadCommands(): Array<Command> {
 }
 
 export function saveCommand(command: Command): Command {
-  let commands: Array<Command> = utools.dbStorage.getItem("commands") as Array<Command> || [];
+  let commands: Array<Command> =
+    (utools.dbStorage.getItem("commands") as Array<Command>) || [];
 
   let _command = commands.find((item: Command) => item.id === command.id);
   if (_command) {
@@ -44,9 +45,9 @@ export function SaveCommands(commands: Array<Command>) {
   }
 }
 
-export function removeCommand(command: Command) {
-  console.log("remove command:", command);
+export function removeCommand(commandId: number) {
+  console.log("remove command id:", commandId);
   let commands: Array<Command> = utools.dbStorage.getItem("commands");
-  commands = commands.filter((item: Command) => item.id !== command.id);
+  commands = commands.filter((item: Command) => item.id !== commandId);
   utools.dbStorage.setItem("commands", commands);
 }

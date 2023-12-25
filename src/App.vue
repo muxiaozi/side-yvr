@@ -24,18 +24,22 @@
         :collapsed="collapsed"
         show-trigger
         @collapse="collapsed = true"
-        @expand="collapsed = false">
+        @expand="collapsed = false"
+      >
         <n-menu
           :collapsed="collapsed"
           :collapsed-width="64"
           :collapsed-icon-size="22"
           :options="menuOptions"
           mode="vertical"
-          v-model:value="activeKey" />
+          v-model:value="activeKey"
+        />
       </n-layout-sider>
       <n-layout>
         <n-dialog-provider>
-          <router-view></router-view>
+          <n-config-provider :hljs="hljs">
+            <router-view></router-view>
+          </n-config-provider>
         </n-dialog-provider>
       </n-layout>
     </n-layout>
@@ -54,6 +58,10 @@ import {
   ShapesSharp as AppIcon,
   Settings as SettingIcon,
 } from "@vicons/ionicons5";
+import hljs from "highlight.js/lib/core";
+import javascript from "highlight.js/lib/languages/javascript";
+
+hljs.registerLanguage("javascript", javascript);
 
 // function installApk(files: Array<UToolsPayloadFile>) {
 //   files.forEach((file: any) => {
@@ -106,5 +114,4 @@ useRouter().replace("/device");
 .n-divider:not(.n-divider--vertical) {
   margin: 0px;
 }
-
 </style>

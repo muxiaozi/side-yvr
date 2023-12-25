@@ -28,7 +28,9 @@ export class ActionRunner {
     // 判断是否支持当前平台
     let platform = getPlatform();
     if (!action.platforms.includes(platform)) {
-      throw new Error(`Action(${action.name}) not support platform: ${platform.toString()}`);
+      throw new Error(
+        `Action(${action.name}) not support platform: ${platform.toString()}`
+      );
     }
 
     this.steps = action.commands.map((command, index) => {
@@ -41,7 +43,7 @@ export class ActionRunner {
     });
   }
 
-  getAction() : Action {
+  getAction(): Action {
     return this.action;
   }
 
@@ -86,7 +88,7 @@ export class ActionRunner {
 }
 
 function generateActionId() {
-  let id = utools.dbStorage.getItem("maxActionId") as number || 0;
+  let id = (utools.dbStorage.getItem("maxActionId") as number) || 0;
   id += 1;
   utools.dbStorage.setItem("maxActionId", id);
   return id;
@@ -99,7 +101,8 @@ export function loadActions(): Array<Action> {
 }
 
 export function saveAction(action: Action): Action {
-  let actions: Array<Action> = utools.dbStorage.getItem("actions") as Array<Action> || [];
+  let actions: Array<Action> =
+    (utools.dbStorage.getItem("actions") as Array<Action>) || [];
 
   let _action = actions.find((item) => item.id === action.id);
   if (_action) {

@@ -3,7 +3,8 @@
     :columns="columns"
     :data="data"
     :single-line="false"
-    :bordered="false" />
+    :bordered="false"
+  />
 </template>
 
 <script setup lang="ts">
@@ -47,5 +48,4 @@ const data: Item[] = [
     value: "Dev_1.26.0",
   },
 ];
-
 </script>

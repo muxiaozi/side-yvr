@@ -22,18 +22,45 @@
 
   <n-divider style="margin: 0px" />
 
-  <n-data-table :columns="columns" :data="data" :bordered="false" :single-line="true" :row-props="rowProps" />
+  <n-data-table
+    :columns="columns"
+    :data="data"
+    :bordered="false"
+    :single-line="true"
+    :row-props="rowProps"
+  />
 
-  <n-dropdown placement="bottom-start" trigger="manual" :width="100" :x="dropdownX" :y="dropdownY" :options="options"
-    :show="showDropdown" :on-clickoutside="(e) => (showDropdown = false)" @select="onDropdownSelect" />
+  <n-dropdown
+    placement="bottom-start"
+    trigger="manual"
+    :width="100"
+    :x="dropdownX"
+    :y="dropdownY"
+    :options="options"
+    :show="showDropdown"
+    :on-clickoutside="(e) => (showDropdown = false)"
+    @select="onDropdownSelect"
+  />
 </template>
 
 <script setup lang="ts">
-import { NButton, useDialog, NCode, NIcon, NTag, NSpace, NButtonGroup } from "naive-ui";
+import {
+  NButton,
+  useDialog,
+  NCode,
+  NIcon,
+  NTag,
+  NSpace,
+  NButtonGroup,
+} from "naive-ui";
 import type { DataTableColumns, DropdownOption } from "naive-ui";
 import { h, ref, nextTick, Ref, toRaw } from "vue";
 import { loadCommands, Command, Platform, removeCommand } from "../api/command";
-import { LogoWindows as WindowsIcon, LogoApple as MacIcon, AddSharp as AddIcon } from "@vicons/ionicons5";
+import {
+  LogoWindows as WindowsIcon,
+  LogoApple as MacIcon,
+  AddSharp as AddIcon,
+} from "@vicons/ionicons5";
 import { Linux as LinuxIcon, FileImport as FileImportIcon } from "@vicons/fa";
 import EditCommand from "./EditCommand.vue";
 import { useRouter } from "vue-router";
@@ -46,7 +73,7 @@ const columns = ref<DataTableColumns<Command>>([
   {
     title: "名称",
     key: "name",
-    sorter: "default"
+    sorter: "default",
   },
   {
     title: "命令",
@@ -68,27 +95,33 @@ const columns = ref<DataTableColumns<Command>>([
       return row.platforms.includes(value.toString() as Platform);
     },
     render(row) {
-      return h(
-        NButtonGroup,
-        null,
-        row.platforms.sort((a, b) => a.localeCompare(b)).map((value) => {
-          return h(
-            NButton,
-            { size: "small", focusable: false, circle: true, secondary: true },
-            {
-              icon: () => {
-                if (value === "windows") {
-                  return h(NIcon, null, { default: () => h(WindowsIcon) });
-                } else if (value === "mac") {
-                  return h(NIcon, null, { default: () => h(MacIcon) });
-                } else if (value === "linux") {
-                  return h(NIcon, null, { default: () => h(LinuxIcon) });
+      return h(NButtonGroup, null, {
+        default: () =>
+          row.platforms
+            .sort((a, b) => a.localeCompare(b))
+            .map((value) => {
+              return h(
+                NButton,
+                {
+                  size: "small",
+                  focusable: false,
+                  circle: true,
+                  secondary: true,
+                },
+                {
+                  icon: () => {
+                    if (value === "windows") {
+                      return h(NIcon, null, { default: () => h(WindowsIcon) });
+                    } else if (value === "mac") {
+                      return h(NIcon, null, { default: () => h(MacIcon) });
+                    } else if (value === "linux") {
+                      return h(NIcon, null, { default: () => h(LinuxIcon) });
+                    }
+                  },
                 }
-              }
-            }
-          );
-        })
-      );
+              );
+            }),
+      });
     },
   },
   {
@@ -98,9 +131,12 @@ const columns = ref<DataTableColumns<Command>>([
       return h(
         NSpace,
         { size: "small" },
-        row.tags?.map((value) => {
-          return h(NTag, { type: "success" }, value);
-        })
+        {
+          default: () =>
+            row.tags?.map((value) => {
+              return h(NTag, { type: "success" }, { default: () => value });
+            }),
+        }
       );
     },
   },
@@ -113,7 +149,8 @@ const options = ref<DropdownOption[]>([
     key: "edit",
   },
   {
-    label: () => h("span", { style: { color: "red" } }, "删除"),
+    label: () =>
+      h("span", { style: { color: "red" } }, { default: () => "删除" }),
     key: "delete",
   },
 ]);
@@ -149,7 +186,7 @@ function onDropdownSelect(key: string | number, option: DropdownOption) {
       title: `删除命令`,
       content: currentRow.value.command,
       onPositiveClick: () => {
-        removeCommand(toRaw(currentRow.value));
+        removeCommand(currentRow.value.id);
         data.value = data.value.filter((value) => value !== currentRow.value);
       },
       positiveText: "确定",
@@ -161,7 +198,7 @@ function onDropdownSelect(key: string | number, option: DropdownOption) {
 function importCommand() {
   dialog.info({
     title: `导入命令`,
-    maskClosable: false
+    maskClosable: false,
   });
 }
 
@@ -169,7 +206,8 @@ function addCommand() {
   dialog.info({
     title: `添加命令`,
     maskClosable: false,
-    content: () => h(EditCommand, { onCommandAdded: (command) => data.value.push(command) }),
+    content: () =>
+      h(EditCommand, { onCommandAdded: (command) => data.value.push(command) }),
   });
 }
 

@@ -5,7 +5,8 @@
         <n-code
           :code="`List of devices attached
 1df1f12 unauthorized`"
-          language="javascript" />
+          language="javascript"
+        />
       </n-ellipsis>
     </n-step>
     <n-step title="adb wait-for-device" />
@@ -14,7 +15,8 @@
         <n-code
           :code="`Failed to set property 'service.dev.mode' to '1'.
 See dmesg for error reason.`"
-          language="javascript" />
+          language="javascript"
+        />
       </n-ellipsis>
     </n-step>
   </n-steps>
@@ -29,5 +31,4 @@ const current = ref(1);
 const props = defineProps<{
   runner: ActionRunner;
 }>();
-
 </script>

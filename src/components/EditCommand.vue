@@ -16,12 +16,23 @@
       </n-checkbox-group>
     </n-form-item>
     <n-form-item label="标签">
-      <n-select v-model:value="formValue.tags" placeholder="输入或选择..." multiple filterable tag :options="tagOptions" />
+      <n-select
+        v-model:value="formValue.tags"
+        placeholder="输入或选择..."
+        multiple
+        filterable
+        tag
+        :options="tagOptions"
+      />
     </n-form-item>
     <n-form-item>
-      <n-space justify="end" style="width: 100%;">
-        <n-button attr-type="button" type="default" @click="onCancel">取消</n-button>
-        <n-button attr-type="submit" type="primary" @click="onSubmit">确定</n-button>
+      <n-space justify="end" style="width: 100%">
+        <n-button attr-type="button" type="default" @click="onCancel"
+          >取消</n-button
+        >
+        <n-button attr-type="submit" type="primary" @click="onSubmit"
+          >确定</n-button
+        >
       </n-space>
     </n-form-item>
   </n-form>
@@ -48,7 +59,7 @@ const formValue = ref<Command>({
 });
 
 if (props.command) {
-  Object.assign(formValue.value, props.command)
+  Object.assign(formValue.value, props.command);
 }
 
 function onSubmit(e: MouseEvent) {

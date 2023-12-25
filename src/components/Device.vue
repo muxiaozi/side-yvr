@@ -1,13 +1,12 @@
 <template>
   <n-divider title-placement="left">常用命令</n-divider>
   <n-space class="command-group">
-    <n-button v-for="data in datas" size="large" @click="action(data.action)">{{ data.name }}</n-button>
+    <n-button v-for="data in datas" size="large" @click="action(data.action)">{{
+      data.name
+    }}</n-button>
   </n-space>
 
-  <n-drawer
-    :show="false"
-    placement="right"
-    :resizable="true">
+  <n-drawer :show="false" placement="right" :resizable="true">
     <n-drawer-content title="hello">
       <RunDetail :run-id="10" />
     </n-drawer-content>
@@ -40,8 +39,7 @@ function action(action: number) {
   console.log(action);
 }
 
-let show = ref(false)
-
+let show = ref(false);
 </script>
 
 <style scoped lang="css">
