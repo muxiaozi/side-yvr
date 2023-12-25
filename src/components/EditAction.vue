@@ -4,7 +4,7 @@
       <n-input v-model:value="formValue.name" placeholder="输入名称" />
     </n-form-item>
     <n-form-item label="命令">
-      <n-dynamic-input v-model:value="commands" show-sort-button placeholder="请输入" :min="1" />
+      <n-dynamic-input v-model:value="formValue.commands" show-sort-button placeholder="请输入" :min="1" />
     </n-form-item>
     <n-form-item label="平台">
       <n-checkbox-group v-model:value="formValue.platforms">
@@ -14,6 +14,9 @@
           <n-checkbox value="linux" label="Linux" />
         </n-space>
       </n-checkbox-group>
+    </n-form-item>
+    <n-form-item label="标签">
+      <n-select v-model:value="formValue.tags" placeholder="输入或选择..." multiple filterable tag :options="tagOptions" />
     </n-form-item>
     <n-form-item>
       <n-space justify="end" style="width: 100%;">
@@ -31,17 +34,18 @@ import { Action, saveAction } from '../api/action';
 
 const props = defineProps<{
   action?: Action;
-  onActionAdded: (action: Action) => void;
+  onActionAdded?: (action: Action) => void;
 }>();
 
+const tagOptions = ref();
 const dialogs = useDialogReactiveList();
 const formValue = ref<Action>({
   id: -1,
   name: "",
   commands: [],
-  platforms: ["windows", "mac", "linux"]
+  platforms: ["windows", "mac", "linux"],
+  tags: [],
 });
-const commands = ref<string[]>([]);
 
 if (props.action) {
   Object.assign(formValue.value, props.action)

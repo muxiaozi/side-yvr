@@ -98,7 +98,7 @@ const columns = ref<DataTableColumns<Command>>([
       return h(
         NSpace,
         { size: "small" },
-        row.tags.map((value) => {
+        row.tags?.map((value) => {
           return h(NTag, { type: "success" }, value);
         })
       );
@@ -142,7 +142,7 @@ function onDropdownSelect(key: string | number, option: DropdownOption) {
   if (key === "edit") {
     dialog.info({
       title: `编辑命令`,
-      content: () => h(EditCommand, { command: currentRow.value, dialog }),
+      content: () => h(EditCommand, { command: currentRow.value }),
     });
   } else if (key === "delete") {
     dialog.warning({

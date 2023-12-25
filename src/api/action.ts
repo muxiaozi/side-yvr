@@ -1,11 +1,12 @@
 import { getPlatform } from "./app";
-import { Command, Platform } from "./command";
+import { Platform } from "./command";
 
 export type Action = {
   id: number;
   name: string;
-  commands: Array<Command>;
+  commands: Array<string>;
   platforms: Array<Platform>;
+  tags: Array<string>;
 };
 
 type Step = {
@@ -33,7 +34,7 @@ export class ActionRunner {
     this.steps = action.commands.map((command, index) => {
       return {
         index,
-        command: command.command,
+        command,
         result: "",
         status: "wait",
       };
@@ -120,9 +121,9 @@ export function saveActions(actions: Array<Action>) {
   }
 }
 
-export function removeAction(action: Action) {
-  console.log("remove action:", action);
+export function removeAction(actionId: number) {
+  console.log("remove action id:", actionId);
   let actions: Array<Action> = utools.dbStorage.getItem("actions");
-  actions = actions.filter((item: Action) => item.id !== action.id);
+  actions = actions.filter((item: Action) => item.id !== actionId);
   utools.dbStorage.setItem("actions", actions);
 }

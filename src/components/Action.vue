@@ -11,20 +11,27 @@
   <n-divider style="margin: 0px" />
 
   <n-data-table :columns="columns" :data="data" :bordered="false" :single-line="true" :row-props="rowProps" />
+
+  <n-dropdown placement="bottom-start" trigger="manual" :width="100" :x="dropdownX" :y="dropdownY" :options="options"
+    :show="showDropdown" :on-clickoutside="(e) => (showDropdown = false)" @select="onDropdownSelect" />
 </template>
 
 <script setup lang="ts">
 import { NButton, useDialog, NCode, NIcon, NTag, NSpace, NButtonGroup } from "naive-ui";
 import type { DataTableColumns, DropdownOption } from "naive-ui";
-import { h, ref, nextTick, Ref } from "vue";
+import { h, ref, nextTick, Ref, toRaw } from "vue";
 import { LogoWindows as WindowsIcon, LogoApple as MacIcon, AddSharp as AddIcon, Flash as FlashIcon } from "@vicons/ionicons5";
 import { Linux as LinuxIcon, FileImport as FileImportIcon } from "@vicons/fa";
 import EditAction from "./EditAction.vue";
 import { useRouter } from "vue-router";
-import { Action, ActionRunner, loadActions, saveAction } from "../api/action";
+import { Action, ActionRunner, loadActions, saveAction, removeAction } from "../api/action";
 import { Platform } from "../api/command";
 
 const router = useRouter();
+
+type RowAction = Action & {
+  key: number;
+};
 
 const columns = createColumns({
   run: (action: Action) => {
@@ -53,21 +60,60 @@ const rowProps = ref((row: Action) => {
   };
 });
 
-const data = ref(loadActions())
+const data = ref(loadActions().map((value, index) => {
+  return {
+    ...value,
+    key: index,
+  };
+}));
+
 const dialog = useDialog();
+
+// 下拉菜单
+const options = ref<DropdownOption[]>([
+  {
+    label: "编辑",
+    key: "edit",
+  },
+  {
+    label: () => h("span", { style: { color: "red" } }, "删除"),
+    key: "delete",
+  },
+]);
+
+function onDropdownSelect(key: string | number, option: DropdownOption) {
+  showDropdown.value = false;
+  if (key === "edit") {
+    dialog.info({
+      title: `编辑命令`,
+      content: () => h(EditAction, { action: currentRow.value }),
+    });
+  } else if (key === "delete") {
+    dialog.warning({
+      title: `删除命令`,
+      content: currentRow.value.name,
+      onPositiveClick: () => {
+        removeAction(currentRow.value.id);
+        data.value = data.value.filter((value) => value !== currentRow.value);
+      },
+      positiveText: "确定",
+      negativeText: "取消",
+    });
+  }
+}
 
 function createColumns({
   run
 }: {
   run: (action: Action) => void;
-}): DataTableColumns<Action> {
+}): DataTableColumns<RowAction> {
   return [
     {
       type: "expand",
       renderExpand: (rowData) => {
         let commands = "";
         for (let command of rowData.commands) {
-          commands += command.command + "\n";
+          commands += command + "\n";
         }
         return h(NCode, { code: commands });
       }
@@ -113,6 +159,19 @@ function createColumns({
       },
     },
     {
+      title: "标签",
+      key: "tags",
+      render(row) {
+        return h(
+          NSpace,
+          { size: "small" },
+          row.tags?.map((value) => {
+            return h(NTag, { type: "success" }, value);
+          })
+        );
+      },
+    },
+    {
       title: "操作",
       key: "action",
       render(row) {
@@ -130,7 +189,7 @@ function addAction() {
   dialog.info({
     title: `添加操作`,
     maskClosable: false,
-    content: () => h(EditAction, { onActionAdded: (action) => data.value.push(action) }),
+    content: () => h(EditAction, { onActionAdded: (action) => data.value.push(Object.assign({}, action, { key: action.id })) }),
   });
 }
 
