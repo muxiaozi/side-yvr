@@ -28,6 +28,7 @@
     :bordered="false"
     :single-line="true"
     :row-props="rowProps"
+    :max-height="`calc(100vh - 142px)`"
   />
 
   <n-dropdown
@@ -219,5 +220,6 @@ function back() {
 <style scoped lang="css">
 .header {
   margin: 10px 10px;
+  height: 28px;
 }
 </style>

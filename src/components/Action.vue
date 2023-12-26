@@ -2,8 +2,8 @@
   <n-page-header title="操作" class="header">
     <template #extra>
       <n-space>
-        <n-button @click="addAction">新增</n-button>
-        <n-button @click="manageCommand">命令</n-button>
+        <n-button size="small" @click="addAction">新增</n-button>
+        <n-button size="small" @click="manageCommand">命令</n-button>
       </n-space>
     </template>
   </n-page-header>
@@ -15,7 +15,9 @@
     :data="data"
     :bordered="false"
     :single-line="true"
-    :row-props="rowProps" />
+    :row-props="rowProps"
+    :max-height="`calc(100vh - 142px)`"
+  />
 
   <n-dropdown
     placement="bottom-start"
@@ -26,7 +28,8 @@
     :options="options"
     :show="showDropdown"
     :on-clickoutside="(e) => (showDropdown = false)"
-    @select="onDropdownSelect" />
+    @select="onDropdownSelect"
+  />
 </template>
 
 <script setup lang="ts">
@@ -52,9 +55,10 @@ import {
 import { Linux as LinuxIcon, FileImport as FileImportIcon } from "@vicons/fa";
 import EditAction from "./EditAction.vue";
 import { useRouter } from "vue-router";
-import { Action, ActionRunner, loadActions, removeAction } from "../api/action";
+import { Action, loadActions, removeAction } from "../api/action";
 import { Platform } from "../api/command";
 import { getPlatform } from "../api/app";
+import { RunManager } from "../api/run_manager";
 
 const router = useRouter();
 
@@ -274,20 +278,17 @@ function manageCommand() {
 }
 
 function runAction(action: Action) {
-  let runner = new ActionRunner(action);
-  runner.onStepChanged((step) => {
-    console.log("step: ", step);
-  });
-  runner.run();
+  RunManager.spawnRunner(action);
 }
 
 function showLog(action: Action) {
-  router.push(`/log/${action.id}`);
+  router.push(`/logs/${action.id}`);
 }
 </script>
 
 <style scoped lang="css">
 .header {
   margin: 10px 10px;
+  height: 28px;
 }
 </style>

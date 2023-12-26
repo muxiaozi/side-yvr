@@ -15,19 +15,23 @@ utools.onPluginEnter(async ({ code, type, payload }) => {
   console.log("用户进入插件", code, type, payload);
   switch (code) {
     case "sideyvr": {
-      await adb.getDevices();
+      router.push("/action");
       break;
     }
     case "analyze-apk": {
+      router.push("/app");
       break;
     }
     case "install-apk": {
+      router.push("/app");
       break;
     }
     case "upload-file": {
+      router.push("/app");
       break;
     }
     case "detect-sn": {
+      router.push("/app");
       break;
     }
   }
