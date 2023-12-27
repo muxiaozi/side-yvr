@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "appium-adb": "^9.14.5",
+    "crypto-js": "^4.2.0",
     "highlight.js": "^11.9.0",
     "sequelize": "^6.33.0",
     "sqlite3": "^5.1.6",
@@ -17,6 +18,7 @@
     "vue-router": "^4.2.4"
   },
   "devDependencies": {
+    "@types/crypto-js": "^4.2.1",
     "@vicons/fa": "^0.12.0",
     "@vicons/ionicons5": "^0.12.0",
     "@vitejs/plugin-vue": "^4.2.3",

@@ -1,6 +1,11 @@
 <template>
   <div class="container">
-    <n-page-header title="运行日志" @back="back" :subtitle="actionName" class="header">
+    <n-page-header
+      title="运行日志"
+      @back="back"
+      subtitle="actionName"
+      class="header"
+    >
     </n-page-header>
 
     <n-divider style="margin: 0px" />
@@ -18,18 +23,14 @@
               :status="data.status"
               style="margin: 16px 4px"
             >
-              <n-step
-                v-for="step in data.steps"
-                :title="step.command"
-                description="123123"
-              >
+              <n-step v-for="step in data.steps" :title="step.command">
                 <n-ellipsis
                   v-if="step.result.length > 0"
                   expand-trigger="click"
                   line-clamp="1"
                   :tooltip="false"
                 >
-                  <n-code :code="step.result" language="javascript" />
+                  <n-code :code="step.result" />
                 </n-ellipsis>
               </n-step>
             </n-steps>
@@ -41,57 +42,42 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
-import { ActionRunner, Step, RunStatus } from "../api/action";
+import { ref, onMounted, onUnmounted } from "vue";
+import { Step, RunStatus, RunManager } from "../api/run";
 import { useRouter, useRoute } from "vue-router";
-
-type Data = {
-  id: number;
-  time: string;
-  current: number;
-  status: RunStatus;
-  steps: Step[];
-};
+import { Action } from "../api/action";
 
 const router = useRouter();
-const actionName = ref(useRoute().params.actionId as string);
-const datas = ref<Data[]>([
-  {
-    id: 1,
-    time: "2021-09-09 12:00:00",
-    current: 2,
-    status: "error",
-    steps: [
-      {
-        index: 1,
-        command: "npm install",
-        result:
-          "adb devices\nasdf\nasdf\nasdf\nasdf\nasdf\nasdf\nasdf\nasdf\nasdf\nasdf\nasdf\nasdf",
-        status: "error",
-      },
-      {
-        index: 2,
-        command: "npm run build",
-        result: "success",
-        status: "error",
-      },
-      {
-        index: 3,
-        command: "npm run test",
-        result: "",
-        status: "error",
-      },
-    ],
-  },
-]);
+const actionId = useRoute().params.actionId;
+const actionName = ref(actionId as string);
 
-const props = defineProps<{
-  runner?: ActionRunner;
-}>();
+const datas = ref(RunManager.getLogsByActionId(Number(actionId)));
 
 function back() {
   router.back();
 }
+
+function onRunLogUpdate(action: Action, logId: string, step: Step) {
+  if (action.id === Number(actionId)) {
+    const data = datas.value.find((data) => data.id === logId);
+    if (data) {
+      const s = data.steps.find((s) => s.index === step.index);
+      if (s) {
+        s.result = step.result;
+        s.exit_code = step.exit_code;
+        s.status = step.status;
+      }
+      data.current = step.index + 1;
+      data.status = step.status;
+    }
+  }
+}
+
+RunManager.addRunListener(onRunLogUpdate);
+
+onUnmounted(() => {
+  RunManager.removeRunListener(onRunLogUpdate);
+});
 </script>
 
 <style scoped lang="css">

@@ -58,7 +58,7 @@ import { useRouter } from "vue-router";
 import { Action, loadActions, removeAction } from "../api/action";
 import { Platform } from "../api/command";
 import { getPlatform } from "../api/app";
-import { RunManager } from "../api/run_manager";
+import { RunManager } from "../api/run";
 
 const router = useRouter();
 
@@ -279,6 +279,7 @@ function manageCommand() {
 
 function runAction(action: Action) {
   RunManager.spawnRunner(action);
+  router.push(`/logs/${action.id}`);
 }
 
 function showLog(action: Action) {

@@ -1,4 +1,3 @@
-import { getPlatform } from "./app";
 import { Platform } from "./command";
 
 export type ActionCommand = {

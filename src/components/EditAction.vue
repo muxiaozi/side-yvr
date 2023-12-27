@@ -123,7 +123,7 @@ function onCancel(e: MouseEvent) {
   }
 }
 
-function onCreateCommand(index: number) {
+function onCreateCommand(index: number): ActionCommand {
   return {
     command: "",
     allow_fail: false,
