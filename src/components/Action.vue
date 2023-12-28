@@ -2,8 +2,27 @@
   <n-page-header title="操作" class="header">
     <template #extra>
       <n-space>
-        <n-button size="small" @click="addAction">新增</n-button>
-        <n-button size="small" @click="manageCommand">命令</n-button>
+        <n-button @click="manageCommand" :round="true" size="small">
+          <template #icon>
+            <n-icon :component="CommandIcon" />
+          </template>
+          命令
+        </n-button>
+
+        <n-button-group>
+          <n-button @click="importAction" :round="true" size="small">
+            <template #icon>
+              <n-icon :component="FileImportIcon" />
+            </template>
+            导入
+          </n-button>
+          <n-button @click="addAction" :round="true" size="small">
+            <template #icon>
+              <n-icon :component="AddIcon" />
+            </template>
+            新增
+          </n-button>
+        </n-button-group>
       </n-space>
     </template>
   </n-page-header>
@@ -51,6 +70,7 @@ import {
   AddSharp as AddIcon,
   Flash as FlashIcon,
   ReceiptOutline as RunLogIcon,
+  CodeSlash as CommandIcon,
 } from "@vicons/ionicons5";
 import { Linux as LinuxIcon, FileImport as FileImportIcon } from "@vicons/fa";
 import EditAction from "./EditAction.vue";
@@ -271,6 +291,15 @@ function addAction() {
       }),
     style: { width: "auto" },
   });
+}
+
+function importAction() {
+  const result = utools.showOpenDialog({
+    title: "导入",
+    properties: ["openFile"],
+    filters: [{ name: "JSON", extensions: ["json"] }],
+  })
+  console.log(result)
 }
 
 function manageCommand() {

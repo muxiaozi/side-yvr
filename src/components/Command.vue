@@ -2,20 +2,12 @@
   <n-page-header title="命令" @back="back" class="header">
     <template #extra>
       <n-space>
-        <n-button-group>
-          <n-button @click="importCommand" :round="true" size="small">
-            <template #icon>
-              <n-icon :component="FileImportIcon" />
-            </template>
-            导入
-          </n-button>
-          <n-button @click="addCommand" :round="true" size="small">
-            <template #icon>
-              <n-icon :component="AddIcon" />
-            </template>
-            添加
-          </n-button>
-        </n-button-group>
+        <n-button @click="addCommand" :round="true" size="small">
+          <template #icon>
+            <n-icon :component="AddIcon" />
+          </template>
+          新增
+        </n-button>
       </n-space>
     </template>
   </n-page-header>
@@ -194,13 +186,6 @@ function onDropdownSelect(key: string | number, option: DropdownOption) {
       negativeText: "取消",
     });
   }
-}
-
-function importCommand() {
-  dialog.info({
-    title: "导入命令",
-    maskClosable: false,
-  });
 }
 
 function addCommand() {

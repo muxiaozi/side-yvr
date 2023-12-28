@@ -1,4 +1,4 @@
-import { createRouter, createWebHashHistory } from "vue-router";
+import { createRouter, createMemoryHistory } from "vue-router";
 
 import Device from "../components/Device.vue";
 import Command from "../components/Command.vue";
@@ -17,7 +17,7 @@ const routes = [
 ];
 
 const router = createRouter({
-  history: createWebHashHistory(),
+  history: createMemoryHistory(),
   routes,
 });
 

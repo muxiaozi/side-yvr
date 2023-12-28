@@ -9,6 +9,7 @@ export type Step = {
   result: string;
   exit_code: number;
   status: RunStatus;
+  allow_fail: boolean;
 };
 
 type RunLog = {
@@ -42,6 +43,7 @@ class ActionRunner {
         result: "",
         exit_code: 0,
         status: "wait",
+        allow_fail: command.allow_fail,
       };
     });
   }
@@ -93,7 +95,19 @@ class ActionRunner {
     }
     this.running = true;
 
-    return Promise.all(this.steps.map((step) => this.runStep(step)));
+    return new Promise(async (resolve, reject) => {
+      for (let step of this.steps) {
+        try {
+          await this.runStep(step);
+        } catch (err) {
+          if (!step.allow_fail) {
+            reject(err);
+            return;
+          }
+        }
+      }
+      resolve(this.steps);
+    });
   }
 }
 
@@ -123,18 +137,17 @@ export class RunManager {
 
   public static addRunListener(listener: RunListener) {
     RunManager.runListeners.push(listener);
-    console.log("add listener");
   }
 
   public static removeRunListener(listener: RunListener) {
     const index = RunManager.runListeners.indexOf(listener);
     if (index > -1) {
       RunManager.runListeners.splice(index, 1);
-      console.log("remove listener");
     }
   }
 
   public static getLogsByActionId(actionId: number): RunLog[] {
+    // 通过读取数据库来加载日志
     const runner = RunManager.runPool.get(actionId);
     if (!runner) {
       return [];

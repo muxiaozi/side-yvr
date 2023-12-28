@@ -132,7 +132,7 @@ class Adb {
             return this.adb.adbExec(result[2])
         }
         console.log(command)
-        return adb.adbExec(command)
+        return this.adb.adbExec(command)
     }
 }
 

@@ -3,7 +3,7 @@
     <n-page-header
       title="运行日志"
       @back="back"
-      subtitle="actionName"
+      :subtitle="actionName"
       class="header"
     >
     </n-page-header>
@@ -22,16 +22,23 @@
               :current="data.current"
               :status="data.status"
               style="margin: 16px 4px"
+              size="small"
             >
-              <n-step v-for="step in data.steps" :title="step.command">
-                <n-ellipsis
-                  v-if="step.result.length > 0"
-                  expand-trigger="click"
-                  line-clamp="1"
-                  :tooltip="false"
-                >
-                  <n-code :code="step.result" />
-                </n-ellipsis>
+              <n-step v-for="step in data.steps">
+                <template #default>
+                  <n-scrollbar
+                    x-scrollable
+                    style="max-height: 200px; max-width: calc(100vw - 400px)"
+                  >
+                    <n-code :code="step.result" />
+                  </n-scrollbar>
+                </template>
+                <template #title>
+                  <span v-if="step.status === 'error'" style="color: #D03050"
+                    >{{ step.command }} [code: {{ step.exit_code }}]</span
+                  >
+                  <span v-else>{{ step.command }}</span>
+                </template>
               </n-step>
             </n-steps>
           </n-scrollbar>
@@ -42,8 +49,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from "vue";
-import { Step, RunStatus, RunManager } from "../api/run";
+import { ref, onUnmounted } from "vue";
+import { Step, RunManager } from "../api/run";
 import { useRouter, useRoute } from "vue-router";
 import { Action } from "../api/action";
 
@@ -52,6 +59,11 @@ const actionId = useRoute().params.actionId;
 const actionName = ref(actionId as string);
 
 const datas = ref(RunManager.getLogsByActionId(Number(actionId)));
+RunManager.addRunListener(onRunLogUpdate);
+
+onUnmounted(() => {
+  RunManager.removeRunListener(onRunLogUpdate);
+});
 
 function back() {
   router.back();
@@ -73,11 +85,6 @@ function onRunLogUpdate(action: Action, logId: string, step: Step) {
   }
 }
 
-RunManager.addRunListener(onRunLogUpdate);
-
-onUnmounted(() => {
-  RunManager.removeRunListener(onRunLogUpdate);
-});
 </script>
 
 <style scoped lang="css">
