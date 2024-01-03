@@ -8,9 +8,7 @@
 </template>
 
 <script setup lang="ts">
-import DeviceInfo from "./DeviceInfo.vue";
-import RunDetail from "./RunDetail.vue";
-import { ref, h } from "vue";
+import { ref } from "vue";
 import { NButton } from "naive-ui";
 import { Action, loadActions } from "../api/action";
 import { getPlatform } from "../api/app";

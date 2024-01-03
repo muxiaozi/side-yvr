@@ -1,4 +1,5 @@
 import { Platform } from "./command";
+import md5 from "crypto-js/md5";
 
 export type ActionCommand = {
   command: string;
@@ -6,36 +7,31 @@ export type ActionCommand = {
 };
 
 export type Action = {
-  id: number;
+  id: string;
   name: string;
   commands: ActionCommand[];
   platforms: Platform[];
   tags: string[];
 };
 
-function generateActionId() {
-  let id = (utools.dbStorage.getItem("maxActionId") as number) || 0;
-  id += 1;
-  utools.dbStorage.setItem("maxActionId", id);
-  return id;
+export function generateActionId() {
+  const token = `action_${utools.getNativeId()}_${Date.now().toString()}_${Math.random()}`;
+  return md5(token).toString();
 }
 
-export function loadActions(): Array<Action> {
-  let actions: Array<Action> = utools.dbStorage.getItem("actions");
+export function loadActions(): Action[] {
+  let actions: Action[] = utools.dbStorage.getItem("actions") || [];
   console.log("load actions:", actions);
   return actions;
 }
 
 export function saveAction(action: Action): Action {
-  let actions: Array<Action> =
-    (utools.dbStorage.getItem("actions") as Array<Action>) || [];
-
+  let actions = loadActions();
   let _action = actions.find((item) => item.id === action.id);
   if (_action) {
     Object.assign(_action, action);
     console.log("update action", action);
   } else {
-    action.id = generateActionId();
     actions.push(action);
     console.log("save action", action);
   }
@@ -44,15 +40,24 @@ export function saveAction(action: Action): Action {
   return action;
 }
 
-export function saveActions(actions: Array<Action>) {
+export function saveActions(actions: Action[]) {
+  let _actions = loadActions();
   for (let action of actions) {
-    saveAction(action);
+    let _action = _actions.find((item) => item.id === action.id);
+    if (_action) {
+      Object.assign(_action, action);
+      console.log("update action", action);
+    } else {
+      _actions.push(action);
+      console.log("save action", action);
+    }
   }
+  utools.dbStorage.setItem("actions", _actions);
 }
 
-export function removeAction(actionId: number) {
+export function removeAction(actionId: string) {
   console.log("remove action id:", actionId);
-  let actions: Array<Action> = utools.dbStorage.getItem("actions");
+  let actions = loadActions();
   actions = actions.filter((item: Action) => item.id !== actionId);
   utools.dbStorage.setItem("actions", actions);
 }

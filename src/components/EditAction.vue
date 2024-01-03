@@ -13,7 +13,7 @@
       >
         <template #default="{ value }">
           <n-space :wrap="false">
-            <n-checkbox label="可失败" v-model:checked="value.allow_fail" />
+            <n-checkbox label="允许失败" v-model:checked="value.allow_fail" />
             <n-auto-complete
               v-model:value="value.command"
               placeholder="请输入命令"
@@ -63,9 +63,15 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import { useDialogReactiveList } from "naive-ui";
-import { Action, saveAction, ActionCommand } from "../api/action";
+import {
+  Action,
+  saveAction,
+  ActionCommand,
+  generateActionId,
+} from "../api/action";
 import { loadCommands } from "../api/command";
-import { deepClone, getPlatform } from "../api/app";
+import { getPlatform } from "../api/app";
+import _ from "lodash";
 
 const props = defineProps<{
   action?: Action;
@@ -75,7 +81,7 @@ const props = defineProps<{
 const tagOptions = ref();
 const dialogs = useDialogReactiveList();
 const formValue = ref<Action>({
-  id: -1,
+  id: "",
   name: "",
   commands: [],
   platforms: ["windows", "mac", "linux"],
@@ -99,12 +105,15 @@ function completeCommand(inputCommand: string) {
 }
 
 if (props.action) {
-  Object.assign(formValue.value, props.action);
+  formValue.value = _.cloneDeep(props.action);
 }
 
 function onSubmit(e: MouseEvent) {
   e.preventDefault();
-  saveAction(deepClone(formValue.value));
+  if (formValue.value.id === "") {
+    formValue.value.id = generateActionId();
+  }
+  saveAction(_.cloneDeep(formValue.value));
   if (props.action) {
     Object.assign(props.action, formValue.value);
   }

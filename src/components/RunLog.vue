@@ -24,7 +24,7 @@
               style="margin: 16px 4px"
               size="small"
             >
-              <n-step v-for="step in data.steps">
+              <n-step v-for="step in data.steps" style="color: black;">
                 <template #default>
                   <n-scrollbar
                     x-scrollable
@@ -55,10 +55,10 @@ import { useRouter, useRoute } from "vue-router";
 import { Action } from "../api/action";
 
 const router = useRouter();
-const actionId = useRoute().params.actionId;
-const actionName = ref(actionId as string);
+const actionId = useRoute().params.actionId as string;
+const actionName = ref(actionId);
 
-const datas = ref(RunManager.getLogsByActionId(Number(actionId)));
+const datas = ref(RunManager.getLogsByActionId(actionId));
 RunManager.addRunListener(onRunLogUpdate);
 
 onUnmounted(() => {
@@ -70,7 +70,7 @@ function back() {
 }
 
 function onRunLogUpdate(action: Action, logId: string, step: Step) {
-  if (action.id === Number(actionId)) {
+  if (action.id === actionId) {
     const data = datas.value.find((data) => data.id === logId);
     if (data) {
       const s = data.steps.find((s) => s.index === step.index);
@@ -106,4 +106,9 @@ function onRunLogUpdate(action: Action, logId: string, step: Step) {
 .n-tabs-nav-scroll-content {
   height: 100%;
 }
+
+attribute {
+  --n-description-text-color: rgba(0, 0, 0, 1);
+}
+
 </style>

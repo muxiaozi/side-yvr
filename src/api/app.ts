@@ -16,7 +16,3 @@ export function getPlatform(): Platform {
     throw new Error("Unknown platform");
   }
 }
-
-export function deepClone(obj: any) {
-  return JSON.parse(JSON.stringify(obj));
-}

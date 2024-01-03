@@ -40,9 +40,9 @@
 
 <script setup lang="ts">
 import { ref } from "vue";
-import { Command, saveCommand } from "../api/command";
+import { Command, generateCommandId, saveCommand } from "../api/command";
 import { useDialogReactiveList } from "naive-ui";
-import { deepClone } from "../api/app";
+import _ from "lodash";
 
 const props = defineProps<{
   command?: Command;
@@ -52,7 +52,7 @@ const props = defineProps<{
 const tagOptions = ref();
 const dialogs = useDialogReactiveList();
 const formValue = ref<Command>({
-  id: -1,
+  id: "",
   name: "",
   command: "",
   platforms: ["windows", "mac", "linux"],
@@ -65,7 +65,11 @@ if (props.command) {
 
 function onSubmit(e: MouseEvent) {
   e.preventDefault();
-  saveCommand(deepClone(formValue.value));
+  // TODO: validate
+  if (formValue.value.id === "") {
+    formValue.value.id = generateCommandId();
+  }
+  saveCommand(_.cloneDeep(formValue.value));
   if (props.command) {
     Object.assign(props.command, formValue.value);
   }

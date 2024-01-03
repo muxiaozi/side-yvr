@@ -70,8 +70,8 @@ class ActionRunner {
       this.current = step.index;
       this.listener(this.action, this.logId, step);
 
-      adb
-        .runCommand(step.command)
+      // adb.
+      runCommand(step.command)
         .then((result) => {
           step.result = result;
           step.exit_code = 0;
@@ -112,8 +112,8 @@ class ActionRunner {
 }
 
 export class RunManager {
-  public static runPool: Map<number, ActionRunner> = new Map<
-    number,
+  public static runPool: Map<string, ActionRunner> = new Map<
+    string,
     ActionRunner
   >();
   public static runListeners: RunListener[] = [];
@@ -146,7 +146,7 @@ export class RunManager {
     }
   }
 
-  public static getLogsByActionId(actionId: number): RunLog[] {
+  public static getLogsByActionId(actionId: string): RunLog[] {
     // 通过读取数据库来加载日志
     const runner = RunManager.runPool.get(actionId);
     if (!runner) {

@@ -75,10 +75,18 @@ import {
 import { Linux as LinuxIcon, FileImport as FileImportIcon } from "@vicons/fa";
 import EditAction from "./EditAction.vue";
 import { useRouter } from "vue-router";
-import { Action, loadActions, removeAction } from "../api/action";
+import {
+  Action,
+  loadActions,
+  removeAction,
+  saveAction,
+  generateActionId,
+  saveActions,
+} from "../api/action";
 import { Platform } from "../api/command";
 import { getPlatform } from "../api/app";
 import { RunManager } from "../api/run";
+import _ from "lodash";
 
 const router = useRouter();
 
@@ -293,13 +301,27 @@ function addAction() {
   });
 }
 
-function importAction() {
+async function importAction() {
   const result = utools.showOpenDialog({
     title: "导入",
     properties: ["openFile"],
     filters: [{ name: "JSON", extensions: ["json"] }],
-  })
-  console.log(result)
+  });
+  if (_.isArray(result)) {
+    const content = await readFile(result[0]);
+    const contentObject = JSON.parse(content);
+    const actions = contentObject.actions.map((value: Action) => {
+      const action = {
+        ...value,
+        id: generateActionId(),
+      };
+      data.value.push(Object.assign({ key: action.id }, action));
+      return action;
+    });
+    saveActions(actions);
+
+    console.log(actions);
+  }
 }
 
 function manageCommand() {
