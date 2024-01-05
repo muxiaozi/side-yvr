@@ -37,8 +37,6 @@ interface DeviceInfo {
 }
 
 interface Adb {
-  // 初始化
-  init(): Promise<void>;
   // 安装应用
   installApk(path: string): Promise<void>;
   // 获取设备列表
@@ -65,3 +63,4 @@ declare var adb: Adb;
 
 declare function runCommand(command: string | string[]): Promise<string>;
 declare function readFile(path: string): Promise<string>;
+declare function writeFile(path: string, content: string): Promise<void>;

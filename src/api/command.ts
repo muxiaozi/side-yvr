@@ -37,10 +37,19 @@ export function saveCommand(command: Command): Command {
   return command;
 }
 
-export function SaveCommands(commands: Command[]) {
+export function saveCommands(commands: Command[]) {
+  let _commands = loadCommands();
   for (let command of commands) {
-    saveCommand(command);
+    const _command = _commands.find((item) => item.id === command.id);
+    if (_command) {
+      Object.assign(_command, command);
+      console.log("update command", command);
+    } else {
+      _commands.push(command);
+      console.log("save command", command);
+    }
   }
+  utools.dbStorage.setItem("commands", _commands);
 }
 
 export function removeCommand(commandId: string) {

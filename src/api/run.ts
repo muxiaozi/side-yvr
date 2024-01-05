@@ -70,7 +70,6 @@ class ActionRunner {
       this.current = step.index;
       this.listener(this.action, this.logId, step);
 
-      // adb.
       runCommand(step.command)
         .then((result) => {
           step.result = result;

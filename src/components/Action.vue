@@ -2,27 +2,24 @@
   <n-page-header title="操作" class="header">
     <template #extra>
       <n-space>
-        <n-button @click="manageCommand" :round="true" size="small">
+        <n-button @click="addAction" round size="small">
+          <template #default>新增</template>
           <template #icon>
-            <n-icon :component="CommandIcon" />
+            <n-icon :component="AddIcon" />
           </template>
-          命令
         </n-button>
 
-        <n-button-group>
-          <n-button @click="importAction" :round="true" size="small">
+        <n-dropdown
+          trigger="click"
+          :options="menuOptions"
+          @select="onMenuOptionSelected"
+        >
+          <n-button :circle="true" size="small" quaternary>
             <template #icon>
-              <n-icon :component="FileImportIcon" />
+              <n-icon :component="MenuIcon" />
             </template>
-            导入
           </n-button>
-          <n-button @click="addAction" :round="true" size="small">
-            <template #icon>
-              <n-icon :component="AddIcon" />
-            </template>
-            新增
-          </n-button>
-        </n-button-group>
+        </n-dropdown>
       </n-space>
     </template>
   </n-page-header>
@@ -63,27 +60,37 @@ import {
   NScrollbar,
 } from "naive-ui";
 import type { DataTableColumns, DropdownOption } from "naive-ui";
-import { h, ref, nextTick, Ref, toRaw } from "vue";
+import { h, ref, nextTick, Ref, Component } from "vue";
 import {
   LogoWindows as WindowsIcon,
   LogoApple as MacIcon,
   AddSharp as AddIcon,
-  Flash as FlashIcon,
+  Flash as RunIcon,
   ReceiptOutline as RunLogIcon,
   CodeSlash as CommandIcon,
+  EllipsisVertical as MenuIcon,
+  PencilSharp as EditIcon,
+  TrashSharp as DeleteIcon,
+  EnterOutline as FileImportIcon,
+  ExitOutline as FileExportIcon,
 } from "@vicons/ionicons5";
-import { Linux as LinuxIcon, FileImport as FileImportIcon } from "@vicons/fa";
+import { Linux as LinuxIcon } from "@vicons/fa";
 import EditAction from "./EditAction.vue";
 import { useRouter } from "vue-router";
 import {
   Action,
   loadActions,
   removeAction,
-  saveAction,
   generateActionId,
   saveActions,
 } from "../api/action";
-import { Platform } from "../api/command";
+import {
+  Platform,
+  Command,
+  generateCommandId,
+  saveCommands,
+  loadCommands,
+} from "../api/command";
 import { getPlatform } from "../api/app";
 import { RunManager } from "../api/run";
 import _ from "lodash";
@@ -93,6 +100,24 @@ const router = useRouter();
 type RowAction = Action & {
   key: number;
 };
+
+const menuOptions = ref<DropdownOption[]>([
+  {
+    label: "命令",
+    key: "command",
+    icon: renderIcon(CommandIcon),
+  },
+  {
+    label: "导入",
+    key: "import",
+    icon: renderIcon(FileImportIcon),
+  },
+  {
+    label: "导出",
+    key: "export",
+    icon: renderIcon(FileExportIcon),
+  },
+]);
 
 const columns = createColumns({ runAction, showLog });
 const dropdownX = ref(0);
@@ -131,12 +156,22 @@ const options = ref<DropdownOption[]>([
   {
     label: "编辑",
     key: "edit",
+    icon: renderIcon(EditIcon),
   },
   {
     label: () => h("span", { style: { color: "red" } }, "删除"),
     key: "delete",
+    icon: renderIcon(DeleteIcon),
   },
 ]);
+
+function renderIcon(icon: Component) {
+  return () => {
+    return h(NIcon, null, {
+      default: () => h(icon),
+    });
+  };
+}
 
 function onDropdownSelect(key: string | number, option: DropdownOption) {
   showDropdown.value = false;
@@ -269,7 +304,7 @@ function createColumns({
                 onClick: () => runAction(row),
                 disabled: !row.platforms.includes(platform),
               },
-              { icon: () => h(NIcon, null, { default: () => h(FlashIcon) }) }
+              { icon: () => h(NIcon, null, { default: () => h(RunIcon) }) }
             ),
             h(
               NButton,
@@ -307,21 +342,63 @@ async function importAction() {
     properties: ["openFile"],
     filters: [{ name: "JSON", extensions: ["json"] }],
   });
-  if (_.isArray(result)) {
-    const content = await readFile(result[0]);
-    const contentObject = JSON.parse(content);
-    const actions = contentObject.actions.map((value: Action) => {
-      const action = {
-        ...value,
-        id: generateActionId(),
-      };
-      data.value.push(Object.assign({ key: action.id }, action));
-      return action;
-    });
-    saveActions(actions);
-
-    console.log(actions);
+  if (!_.isArray(result)) {
+    console.log("import failed, no file selected");
+    return;
   }
+  const content = await readFile(result[0]);
+  const contentObject = JSON.parse(content);
+  const actions = contentObject.actions.map((value: Action) => {
+    const action = {
+      ...value,
+      id: generateActionId(),
+    };
+    data.value.push(Object.assign({ key: action.id }, action));
+    return action;
+  });
+  saveActions(actions);
+
+  const commands = contentObject.commands.map((value: Command) => {
+    const command = {
+      ...value,
+      id: generateCommandId(),
+    };
+    return command;
+  });
+  saveCommands(commands);
+}
+
+async function exportAction() {
+  const result = utools.showSaveDialog({
+    title: "导出",
+    defaultPath: "data.json",
+    filters: [{ name: "JSON", extensions: ["json"] }],
+  });
+
+  if (!_.isString(result) || result.length === 0) {
+    console.log("export failed, no file selected");
+    return;
+  }
+  const data = {
+    actions: loadActions().map((value) => {
+      return {
+        name: value.name,
+        commands: value.commands,
+        platforms: value.platforms,
+        tags: value.tags,
+      };
+    }),
+    commands: loadCommands().map((value) => {
+      return {
+        name: value.name,
+        command: value.command,
+        platforms: value.platforms,
+        tags: value.tags,
+      };
+    }),
+  };
+  const content = JSON.stringify(data,null,2);
+  await writeFile(result, content);
 }
 
 function manageCommand() {
@@ -336,6 +413,17 @@ function runAction(action: Action) {
 function showLog(action: Action) {
   router.push(`/logs/${action.id}`);
 }
+
+function onMenuOptionSelected(key: string | number) {
+  if (key === "import") {
+    importAction();
+  } else if (key === "export") {
+    exportAction();
+  } else if (key === "command") {
+    manageCommand();
+  }
+}
+
 </script>
 
 <style scoped lang="css">

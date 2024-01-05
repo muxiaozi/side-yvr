@@ -4,25 +4,25 @@
       "name": "枚举设备",
       "command": "adb devices",
       "platforms": ["linux", "mac", "windows"],
-      "tags": ["import"]
+      "tags": []
     },
     {
       "name": "重启设备",
       "command": "adb reboot",
       "platforms": ["linux", "mac", "windows"],
-      "tags": ["import"]
+      "tags": []
     },
     {
       "name": "获取IP地址",
       "command": "adb shell ip addr",
       "platforms": ["linux", "mac", "windows"],
-      "tags": ["import"]
+      "tags": []
     },
     {
       "name": "等待设备",
       "command": "adb wait-for-device",
       "platforms": ["linux", "mac", "windows"],
-      "tags": ["import"]
+      "tags": []
     }
   ],
   "actions": [

@@ -6,7 +6,7 @@
           <template #icon>
             <n-icon :component="AddIcon" />
           </template>
-          新增
+          <template #default>新增</template>
         </n-button>
       </n-space>
     </template>
@@ -47,12 +47,14 @@ import {
   NButtonGroup,
 } from "naive-ui";
 import type { DataTableColumns, DropdownOption } from "naive-ui";
-import { h, ref, nextTick, Ref, toRaw } from "vue";
+import { h, ref, nextTick, Ref, toRaw, Component } from "vue";
 import { loadCommands, Command, Platform, removeCommand } from "../api/command";
 import {
   LogoWindows as WindowsIcon,
   LogoApple as MacIcon,
   AddSharp as AddIcon,
+  PencilSharp as EditIcon,
+  TrashSharp as DeleteIcon,
 } from "@vicons/ionicons5";
 import { Linux as LinuxIcon, FileImport as FileImportIcon } from "@vicons/fa";
 import EditCommand from "./EditCommand.vue";
@@ -140,11 +142,13 @@ const options = ref<DropdownOption[]>([
   {
     label: "编辑",
     key: "edit",
+    icon: renderIcon(EditIcon),
   },
   {
     label: () =>
       h("span", { style: { color: "red" } }, { default: () => "删除" }),
     key: "delete",
+    icon: renderIcon(DeleteIcon),
   },
 ]);
 
@@ -166,6 +170,14 @@ const rowProps = ref((row: Command) => {
     },
   };
 });
+
+function renderIcon(icon: Component) {
+  return () => {
+    return h(NIcon, null, {
+      default: () => h(icon),
+    });
+  };
+}
 
 function onDropdownSelect(key: string | number, option: DropdownOption) {
   showDropdown.value = false;

@@ -1,0 +1,132 @@
+{
+  "actions": [
+    {
+      "name": "test",
+      "commands": [
+        {
+          "command": "adb devices",
+          "allow_fail": false
+        },
+        {
+          "command": "adb  logcat -T 1000 -d",
+          "allow_fail": false
+        },
+        {
+          "command": "adb shell ip addr",
+          "allow_fail": false
+        },
+        {
+          "command": "adb shell getprop | adb shell grep serial",
+          "allow_fail": false
+        }
+      ],
+      "platforms": [
+        "linux",
+        "mac",
+        "windows"
+      ],
+      "tags": [
+        "adb"
+      ]
+    },
+    {
+      "name": "windows",
+      "commands": [
+        {
+          "command": "dir",
+          "allow_fail": false
+        }
+      ],
+      "platforms": [
+        "windows",
+        "mac",
+        "linux"
+      ],
+      "tags": []
+    },
+    {
+      "name": "获取IP地址",
+      "commands": [
+        {
+          "command": "adb wait-for-device",
+          "allow_fail": false
+        },
+        {
+          "command": "adb devices",
+          "allow_fail": false
+        },
+        {
+          "command": "adb shell sleep 3",
+          "allow_fail": false
+        },
+        {
+          "command": "adb shell ip xx",
+          "allow_fail": true
+        },
+        {
+          "command": "adb shell getprop | grep serial",
+          "allow_fail": false
+        }
+      ],
+      "platforms": [
+        "linux",
+        "mac",
+        "windows"
+      ],
+      "tags": [
+        "adb",
+        "favorite"
+      ]
+    }
+  ],
+  "commands": [
+    {
+      "name": "枚举设备",
+      "command": "adb devices",
+      "platforms": [
+        "linux",
+        "mac",
+        "windows"
+      ],
+      "tags": [
+        "import"
+      ]
+    },
+    {
+      "name": "重启设备",
+      "command": "adb reboot",
+      "platforms": [
+        "linux",
+        "mac",
+        "windows"
+      ],
+      "tags": [
+        "import"
+      ]
+    },
+    {
+      "name": "获取IP地址",
+      "command": "adb shell ip addr",
+      "platforms": [
+        "linux",
+        "mac",
+        "windows"
+      ],
+      "tags": [
+        "import"
+      ]
+    },
+    {
+      "name": "等待设备",
+      "command": "adb wait-for-device",
+      "platforms": [
+        "linux",
+        "mac",
+        "windows"
+      ],
+      "tags": [
+        "import"
+      ]
+    }
+  ]
+}
