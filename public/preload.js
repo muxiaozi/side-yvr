@@ -23,12 +23,21 @@ async function runCommand(command) {
   }
 }
 
+/**
+ * 读取文件内容
+ * @param {string} path 读取文件路径
+ */
 async function readFile(path) {
   return util.promisify(fs.readFile)(path, {
     encoding: "utf8",
   });
 }
 
+/**
+ * 写入文件内容
+ * @param {string} path 保存文件路径
+ * @param {string} content 文件内容
+ */
 async function writeFile(path, content) {
   return util.promisify(fs.writeFile)(path, content, {
     encoding: "utf8",

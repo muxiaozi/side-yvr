@@ -12,8 +12,7 @@
         <n-dropdown
           trigger="click"
           :options="menuOptions"
-          @select="onMenuOptionSelected"
-        >
+          @select="onMenuOptionSelected">
           <n-button :circle="true" size="small" quaternary>
             <template #icon>
               <n-icon :component="MenuIcon" />
@@ -32,8 +31,7 @@
     :bordered="false"
     :single-line="true"
     :row-props="rowProps"
-    :max-height="`calc(100vh - 142px)`"
-  />
+    :max-height="`calc(100vh - 142px)`" />
 
   <n-dropdown
     placement="bottom-start"
@@ -44,8 +42,7 @@
     :options="options"
     :show="showDropdown"
     :on-clickoutside="(e) => (showDropdown = false)"
-    @select="onDropdownSelect"
-  />
+    @select="onDropdownSelect" />
 </template>
 
 <script setup lang="ts">
@@ -85,13 +82,12 @@ import {
   saveActions,
 } from "../api/action";
 import {
-  Platform,
   Command,
   generateCommandId,
   saveCommands,
   loadCommands,
 } from "../api/command";
-import { getPlatform } from "../api/app";
+import { getPlatform, Platform } from "../api/app";
 import { RunManager } from "../api/run";
 import _ from "lodash";
 
@@ -397,7 +393,7 @@ async function exportAction() {
       };
     }),
   };
-  const content = JSON.stringify(data,null,2);
+  const content = JSON.stringify(data, null, 2);
   await writeFile(result, content);
 }
 
@@ -423,7 +419,6 @@ function onMenuOptionSelected(key: string | number) {
     manageCommand();
   }
 }
-
 </script>
 
 <style scoped lang="css">

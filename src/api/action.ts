@@ -1,4 +1,4 @@
-import { Platform } from "./command";
+import { Platform } from "./app";
 import md5 from "crypto-js/md5";
 
 export type ActionCommand = {

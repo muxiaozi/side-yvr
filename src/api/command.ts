@@ -1,6 +1,5 @@
 import md5 from "crypto-js/md5";
-
-export type Platform = "windows" | "mac" | "linux";
+import { Platform } from "./app";
 
 export type Command = {
   id: string;
@@ -40,7 +39,7 @@ export function saveCommand(command: Command): Command {
 export function saveCommands(commands: Command[]) {
   let _commands = loadCommands();
   for (let command of commands) {
-    const _command = _commands.find((item) => item.id === command.id);
+    let _command = _commands.find((item) => item.id === command.id);
     if (_command) {
       Object.assign(_command, command);
       console.log("update command", command);
