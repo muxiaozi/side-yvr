@@ -4,6 +4,8 @@ const fs = require("fs");
 const _ = require("lodash");
 
 class Adb {
+  rooted = false;
+
   constructor() {
     ADB.createADB()
       .then((adb) => {
@@ -14,21 +16,30 @@ class Adb {
       });
   }
 
+  async root() {
+    if ((await this.adb.shell("getprop service.dev.mode")) === "1") {
+      console.log("already root");
+      return;
+    }
+    try {
+      let result;
+      result = await this.adb.shell(
+        "am broadcast -a com.yvr.demo.action.dev.mode --include-stopped-packages"
+      );
+      console.log("root[1] result: ", result);
+      result = await this.adb.shell("setprop service.dev.mode 1");
+      console.log("root[2] result: ", result);
+      await this.adb.waitForDevice();
+      this.rooted = true;
+    } catch (e) {
+      console.error(e.message);
+    }
+  }
+
   async installApk(apkPath) {
-    await this.adb?.install(apkPath, {
+    await this.adb.install(apkPath, {
       grantPermissions: true,
     });
-  }
-
-  async getDevices() {
-    const devices = await this.adb.getConnectedDevices();
-    console.log(devices);
-    return devices;
-  }
-
-  async getDeviceInfo() {
-    const text = await this.adb.shell("ip addr");
-    console.log(text);
   }
 
   /**
@@ -139,21 +150,100 @@ class Adb {
     this.adb.setLogcatListener((line) => console.log(line));
   }
 
-  async runCommand(command) {
-    let adbShellPattern = /(adb)\s+(shell)\s+(.*)/i;
-    let adbExecPattern = /(adb)\s+(\w+)/i;
-    let result = adbShellPattern.exec(command);
-    if (result) {
-      console.log("run shell", result);
-      return this.adb.shell(result[3]);
+  /**
+   * 获取设备电量
+   */
+  async getDeviceBattery() {
+    const result = await this.adb.shell("dumpsys battery");
+    const chargeCounter = /Charge counter: (\d+)/.exec(result);
+    const isCharging = /status: (\d+)/.exec(result);
+    const level = /level: (\d+)/.exec(result);
+    const temperature = /temperature: (\d+)/.exec(result);
+    const voltage = /^  voltage: (\d+)/m.exec(result);
+    const health = /health: (\w+)/.exec(result);
+    const powerSupply = await this.adb.shell(
+      "cat /sys/class/power_supply/battery/current_now"
+    );
+    return {
+      changeCounter: _.toNumber(chargeCounter[1]),
+      isCharging: _.toNumber(isCharging[1]) === 2,
+      batteryPercentRemaining: _.toNumber(level[1]),
+      temperature: _.toNumber(temperature[1]) / 10, // ℃
+      voltage: _.toNumber(voltage[1]) / 1000, // V
+      health: _.toNumber(health[1]) === 2,
+      powerSupply: _.toNumber(powerSupply) / 1000, // mA
+    };
+  }
+
+  /**
+   * 获取手柄状态
+   */
+  async getControllerState() {
+    await this.root();
+    const result = await this.adb.shell(
+      "dumpsys android.yvr.trackingservice --controllerState"
+    );
+    const leftController =
+      /Left Controller Buttons:(\S+)\s+Touches:(\S+)\s+IndexTrigger:(\S+)\s+Thumbstick\[0\]:(\S+)\s+Thumbstick\[1\]:(\S+)\s+BatteryPercentRemaining:(\S+)\s+is_charging:(\S+)\s+Freq:(\S+)\s+SN:(\S+)\s+Version:(\S+)/.exec(
+        result
+      );
+    const rightController =
+      /Right Controller Buttons:(\S+)\s+Touches:(\S+)\s+IndexTrigger:(\S+)\s+Thumbstick\[0\]:(\S+)\s+Thumbstick\[1\]:(\S+)\s+BatteryPercentRemaining:(\S+)\s+is_charging:(\S+)\s+Freq:(\S+)\s+SN:(\S+)\s+Version:(\S+)/.exec(
+        result
+      );
+    return [
+      leftController
+        ? {
+            name: "LeftController",
+            buttons: _.toNumber(leftController[1]),
+            touches: _.toNumber(leftController[2]),
+            indexTrigger: _.toNumber(leftController[3]),
+            thumbstick0: _.toNumber(leftController[4]),
+            thumbstick1: _.toNumber(leftController[5]),
+            batteryPercentRemaining: _.toNumber(leftController[6]),
+            isCharging: leftController[7] !== "0",
+            freq: _.toNumber(leftController[8]),
+            sn: leftController[9],
+            version: leftController[10],
+            connected: _.toNumber(leftController[6]) !== 0,
+          }
+        : null,
+      rightController
+        ? {
+            name: "RightController",
+            buttons: _.toNumber(rightController[1]),
+            touches: _.toNumber(rightController[2]),
+            indexTrigger: _.toNumber(rightController[3]),
+            thumbstick0: _.toNumber(rightController[4]),
+            thumbstick1: _.toNumber(rightController[5]),
+            batteryPercentRemaining: _.toNumber(rightController[6]),
+            isCharging: rightController[7] !== "0",
+            freq: _.toNumber(rightController[8]),
+            sn: rightController[9],
+            version: rightController[10],
+            connected: _.toNumber(rightController[6]) !== 0,
+          }
+        : null,
+    ];
+  }
+
+  /**
+   * 获取设备状态
+   */
+  async getDeviceStatus() {
+    const devices = await this.adb.getConnectedDevices();
+    if (devices.length === 0) {
+      return null;
     }
-    result = adbExecPattern.exec(command);
-    if (result) {
-      console.log("run exec", result);
-      return this.adb.adbExec(result[2]);
-    }
-    console.log(command);
-    return this.adb.adbExec(command);
+    const controllerState = await this.getControllerState();
+    const deviceBattery = await this.getDeviceBattery();
+    return {
+      device: {
+        serialNo: devices[0].udid,
+        battery: deviceBattery,
+      },
+      controllers: controllerState,
+    };
   }
 }
 

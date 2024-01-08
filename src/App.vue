@@ -2,7 +2,7 @@
   <div style="display: flex; flex-direction: column; height: 100vh">
     <div class="my-header">
       <span>
-        <n-tag :bordered="false" type="success"> 已连接 </n-tag>
+        <n-tag :bordered="false" type="success">已连接</n-tag>
       </span>
       <span>
         <span>头盔(10%)</span>
@@ -60,6 +60,7 @@ import {
 } from "@vicons/ionicons5";
 import hljs from "highlight.js/lib/core";
 import javascript from "highlight.js/lib/languages/javascript";
+import { startDeviceCheck, stopDeviceCheck, getDeviceStatus } from "./api/device";
 
 hljs.registerLanguage("javascript", javascript);
 
@@ -101,6 +102,9 @@ router.afterEach((to, from, failure) => {
     activeKey.value = routeName;
   }
 });
+
+const status = ref(getDeviceStatus());
+
 </script>
 
 <style scoped>

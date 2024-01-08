@@ -12,7 +12,8 @@
         <n-dropdown
           trigger="click"
           :options="menuOptions"
-          @select="onMenuOptionSelected">
+          @select="onMenuOptionSelected"
+        >
           <n-button :circle="true" size="small" quaternary>
             <template #icon>
               <n-icon :component="MenuIcon" />
@@ -31,7 +32,8 @@
     :bordered="false"
     :single-line="true"
     :row-props="rowProps"
-    :max-height="`calc(100vh - 142px)`" />
+    :max-height="`calc(100vh - 142px)`"
+  />
 
   <n-dropdown
     placement="bottom-start"
@@ -42,7 +44,8 @@
     :options="options"
     :show="showDropdown"
     :on-clickoutside="(e) => (showDropdown = false)"
-    @select="onDropdownSelect" />
+    @select="onDropdownSelect"
+  />
 </template>
 
 <script setup lang="ts">
@@ -70,8 +73,8 @@ import {
   TrashSharp as DeleteIcon,
   EnterOutline as FileImportIcon,
   ExitOutline as FileExportIcon,
+  LogoTux as LinuxIcon,
 } from "@vicons/ionicons5";
-import { Linux as LinuxIcon } from "@vicons/fa";
 import EditAction from "./EditAction.vue";
 import { useRouter } from "vue-router";
 import {

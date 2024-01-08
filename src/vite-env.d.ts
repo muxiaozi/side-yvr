@@ -31,16 +31,9 @@ interface PackageInfo {
   type: "user" | "system";
 }
 
-interface DeviceInfo {
-  state: string;
-  udid: string;
-}
-
 interface Adb {
   // 安装应用
   installApk(path: string): Promise<void>;
-  // 获取设备列表
-  getDevices(): Promise<DeviceInfo[]>;
 
   // 获取应用信息
   getAppInfo(packageInfo: PackageInfo): Promise<AppInfo>;
@@ -48,8 +41,8 @@ interface Adb {
   // 获取包列表
   getPackageListByType(type?: "system" | "user"): Promise<PackageInfo[]>;
 
-  // 运行命令
-  runCommand(command: string): Promise<string>;
+  // 获取设备状态
+  getDeviceStatus(): Promise<void>;
 }
 
 interface UToolsPayloadFile {

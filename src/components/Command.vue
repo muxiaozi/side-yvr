@@ -47,16 +47,17 @@ import {
   NButtonGroup,
 } from "naive-ui";
 import type { DataTableColumns, DropdownOption } from "naive-ui";
-import { h, ref, nextTick, Ref, toRaw, Component } from "vue";
-import { loadCommands, Command, Platform, removeCommand } from "../api/command";
+import { h, ref, nextTick, Ref, Component } from "vue";
+import { loadCommands, Command, removeCommand } from "../api/command";
+import { Platform } from "../api/app";
 import {
   LogoWindows as WindowsIcon,
   LogoApple as MacIcon,
+  LogoTux as LinuxIcon,
   AddSharp as AddIcon,
   PencilSharp as EditIcon,
   TrashSharp as DeleteIcon,
 } from "@vicons/ionicons5";
-import { Linux as LinuxIcon, FileImport as FileImportIcon } from "@vicons/fa";
 import EditCommand from "./EditCommand.vue";
 import { useRouter } from "vue-router";
 

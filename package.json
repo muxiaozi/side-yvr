@@ -22,7 +22,6 @@
   },
   "devDependencies": {
     "@types/crypto-js": "^4.2.1",
-    "@vicons/fa": "^0.12.0",
     "@vicons/ionicons5": "^0.12.0",
     "@vitejs/plugin-vue": "^4.2.3",
     "naive-ui": "^2.36.0",
