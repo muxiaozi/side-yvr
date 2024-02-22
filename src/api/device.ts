@@ -6,38 +6,43 @@ type DeviceStatus = {
   rooted: boolean;
 };
 
-const deviceMap: Map<string, DeviceStatus> = new Map();
-let deviceCheckTimer: number = -1;
+let deviceCheckTimer: number = 0;
+let deviceCheckEnable: boolean = false;
+let currentDeviceSerialNo: string = "";
+let currentDeviceStatus: DeviceStatus | undefined;
+let deviceStatusListeners: DeviceListener[] = [];
 
-function updateDeviceStatus() {
+type DeviceListener = (status: DeviceStatus) => void;
+
+async function updateDeviceStatus() {
   console.log("update device status");
-  getDeviceStatus();
+  // adb.getDeviceStatus();
 }
 
-export function getDeviceStatus(serialNo?: string): DeviceStatus | undefined {
-  if (serialNo) {
-    return deviceMap.get(serialNo);
-  } else {
-    for (let status of deviceMap.values()) {
-      return status;
-    }
-    return undefined;
+export async function startDeviceCheck() {
+  deviceCheckEnable = true;
+  await updateDeviceStatus();
+  if (deviceCheckEnable) {
+    deviceCheckTimer = setTimeout(startDeviceCheck, 1000);
   }
-}
-
-export function startDeviceCheck() {
-  if (deviceCheckTimer === -1) {
-    console.log("start check device fail, already running");
-    return;
-  }
-  deviceCheckTimer = setInterval(updateDeviceStatus, 1000);
-  console.log("start check device, interval: 1s");
 }
 
 export function stopDeviceCheck() {
-  if (deviceCheckTimer !== -1) {
-    clearInterval(deviceCheckTimer);
-    deviceCheckTimer = -1;
+  if (deviceCheckTimer !== 0) {
+    clearTimeout(deviceCheckTimer);
+    deviceCheckTimer = 0;
     console.log("stop check device");
   }
+}
+
+export function addEventListener(listener: DeviceListener) {
+  deviceStatusListeners.push(listener);
+}
+
+export function removeEventListener(listener: DeviceListener) {
+  deviceStatusListeners = deviceStatusListeners.filter((l) => l !== listener);
+}
+
+export function getDeviceStatus(): DeviceStatus | undefined {
+  return currentDeviceStatus;
 }

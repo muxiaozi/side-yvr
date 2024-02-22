@@ -4,6 +4,7 @@ import { createApp } from "vue";
 import App from "./App.vue";
 import naive from "naive-ui";
 import router from "./router";
+import { startDeviceCheck, stopDeviceCheck } from "./api/device";
 
 const app = createApp(App);
 app.use(naive);
@@ -13,6 +14,7 @@ app.mount("#app");
 // 进入插件
 utools.onPluginEnter(async ({ code, type, payload }) => {
   console.log("用户进入插件", code, type, payload);
+  startDeviceCheck();
   switch (code) {
     case "sideyvr": {
       router.push("/device");
@@ -40,6 +42,7 @@ utools.onPluginEnter(async ({ code, type, payload }) => {
 // 退出插件
 utools.onPluginOut(() => {
   console.log("用户退出插件");
+  stopDeviceCheck();
 });
 
 utools.onDbPull((docs: { _id: string; _rev: string }[]) => {});

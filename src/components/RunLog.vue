@@ -106,9 +106,4 @@ function onRunLogUpdate(action: Action, logId: string, step: Step) {
 .n-tabs-nav-scroll-content {
   height: 100%;
 }
-
-attribute {
-  --n-description-text-color: rgba(0, 0, 0, 1);
-}
-
 </style>

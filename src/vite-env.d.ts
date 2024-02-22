@@ -31,6 +31,37 @@ interface PackageInfo {
   type: "user" | "system";
 }
 
+type DeviceStatus = {
+  device: {
+    connected: boolean;
+    serialNo: string;
+    version: string;
+    battery: {
+      changeCounter: number;
+      isCharging: boolean;
+      batteryPercentRemaining: number;
+      temperature: number; // ℃
+      voltage: number; // V
+      health: boolean;
+      current: number; // mA
+    };
+  };
+  controllers: {
+    name: "LeftController" | "RightController";
+    buttons: number;
+    touches: number;
+    indexTrigger: number;
+    thumbstick0: number;
+    thumbstick1: number;
+    batteryPercentRemaining: number;
+    isCharging: boolean;
+    freq: number;
+    serialNo: string;
+    version: string;
+    connected: boolean;
+  }[];
+};
+
 interface Adb {
   // 安装应用
   installApk(path: string): Promise<void>;
@@ -42,7 +73,7 @@ interface Adb {
   getPackageListByType(type?: "system" | "user"): Promise<PackageInfo[]>;
 
   // 获取设备状态
-  getDeviceStatus(): Promise<void>;
+  getDeviceStatus(): Promise<DeviceStatus>;
 }
 
 interface UToolsPayloadFile {

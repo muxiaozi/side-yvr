@@ -22,7 +22,7 @@ const App = sequelize.define(
   {
     underscored: true,
     freezeTableName: true,
-  }
+  },
 );
 const RunLog = sequelize.define(
   "run_log",
@@ -42,7 +42,7 @@ const RunLog = sequelize.define(
   {
     underscored: true,
     freezeTableName: true,
-  }
+  },
 );
 
 class Database {

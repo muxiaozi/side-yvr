@@ -4,8 +4,6 @@ const fs = require("fs");
 const _ = require("lodash");
 
 class Adb {
-  rooted = false;
-
   constructor() {
     ADB.createADB()
       .then((adb) => {
@@ -17,20 +15,18 @@ class Adb {
   }
 
   async root() {
-    if ((await this.adb.shell("getprop service.dev.mode")) === "1") {
-      console.log("already root");
-      return;
-    }
     try {
+      if ((await this.adb.shell("getprop service.dev.mode")) === "1") {
+        console.log("already root");
+        return;
+      }
+
       let result;
-      result = await this.adb.shell(
-        "am broadcast -a com.yvr.demo.action.dev.mode --include-stopped-packages"
-      );
+      result = await this.adb.shell("am broadcast -a com.yvr.demo.action.dev.mode --include-stopped-packages");
       console.log("root[1] result: ", result);
       result = await this.adb.shell("setprop service.dev.mode 1");
       console.log("root[2] result: ", result);
       await this.adb.waitForDevice();
-      this.rooted = true;
     } catch (e) {
       console.error(e.message);
     }
@@ -49,15 +45,10 @@ class Adb {
    */
   async getPackageListByType(type) {
     if (_.isUndefined(type)) {
-      return [
-        ...(await this.getPackageListByType("user")),
-        ...(await this.getPackageListByType("system")),
-      ];
+      return [...(await this.getPackageListByType("user")), ...(await this.getPackageListByType("system"))];
     }
 
-    let appsStr = await this.adb.shell(
-      `pm list packages -f ${type == "user" ? "-3" : "-s"}`
-    );
+    let appsStr = await this.adb.shell(`pm list packages -f ${type == "user" ? "-3" : "-s"}`);
     return appsStr.split("\n").map((line) => {
       const [, apkPath, packageName] = line.match(/package:(.+)=([^\s]+)/);
       return { apkPath, packageName, type };
@@ -66,66 +57,49 @@ class Adb {
 
   /**
    * 获取应用具体信息
-   * @param {*} packageInfo 包名
-   * @returns [{ packageName, apkPath, versionCode, versionName, appName, iconPath }]
    */
   async getAppInfo(packageInfo) {
     let versionCode, versionName, appName, iconPath;
 
     let aaptDumpBadgingStr;
     try {
-      aaptDumpBadgingStr = await this.adb.shell(
-        `/data/local/tmp/aapt-arm-pie dump badging ${packageInfo.apkPath}`
-      );
+      aaptDumpBadgingStr = await this.adb.shell(`/data/local/tmp/aapt-arm-pie dump badging ${packageInfo.apkPath}`);
     } catch (e) {
       aaptDumpBadgingStr = e.stdout;
       console.error(e.message);
     }
 
     try {
-      const [, _1, _2] = aaptDumpBadgingStr.match(
-        /package: name='[^']+' versionCode='([^']+)' versionName='([^']+)'/
-      );
+      const [, _1, _2] = aaptDumpBadgingStr.match(/package: name='[^']+' versionCode='([^']+)' versionName='([^']+)'/);
       versionCode = versionCode || _1;
       versionName = versionName || _2;
     } catch (ignore) {}
 
     try {
-      const [, _1] = aaptDumpBadgingStr.match(
-        /application-label-zh-CN:'([^']+)'/
-      );
+      const [, _1] = aaptDumpBadgingStr.match(/application-label-zh-CN:'([^']+)'/);
       appName = appName || _1;
     } catch (ignore) {}
 
     try {
-      const [, _1, _2] = aaptDumpBadgingStr.match(
-        /application: label='([^']*)' icon='([^']*)'/
-      );
+      const [, _1, _2] = aaptDumpBadgingStr.match(/application: label='([^']*)' icon='([^']*)'/);
       appName = appName || _1;
       iconPath = iconPath || _2;
     } catch (ignore) {}
 
-    console.log(
-      `versionCode: ${versionCode}, versionName: ${versionName}, appName: ${appName}, iconPath: ${iconPath}`
-    );
+    console.log(`versionCode: ${versionCode}, versionName: ${versionName}, appName: ${appName}, iconPath: ${iconPath}`);
 
     if (iconPath && [".png", ".webp"].includes(path.extname(iconPath))) {
       try {
         await this.adb.shell(`mkdir -p /data/local/tmp/sideyvr_icons`);
-        await this.adb.shell(
-          `unzip -o -d /data/local/tmp/sideyvr_icons/ ${packageInfo.apkPath} ${iconPath}`
-        );
+        await this.adb.shell(`unzip -o -d /data/local/tmp/sideyvr_icons/ ${packageInfo.apkPath} ${iconPath}`);
         let localPath = path.resolve(
           utools.getPath("temp"),
           "sideyvr",
           packageInfo.packageName,
-          path.parse(iconPath).base
+          path.parse(iconPath).base,
         );
         fs.mkdirSync(path.dirname(localPath), { recursive: true });
-        await this.adb.pull(
-          `/data/local/tmp/sideyvr_icons/${iconPath}`,
-          localPath
-        );
+        await this.adb.pull(`/data/local/tmp/sideyvr_icons/${iconPath}`, localPath);
         iconPath = localPath;
       } catch (e) {
         console.error(e.message);
@@ -161,9 +135,7 @@ class Adb {
     const temperature = /temperature: (\d+)/.exec(result);
     const voltage = /^  voltage: (\d+)/m.exec(result);
     const health = /health: (\w+)/.exec(result);
-    const powerSupply = await this.adb.shell(
-      "cat /sys/class/power_supply/battery/current_now"
-    );
+    const current = await this.adb.shell("cat /sys/class/power_supply/battery/current_now");
     return {
       changeCounter: _.toNumber(chargeCounter[1]),
       isCharging: _.toNumber(isCharging[1]) === 2,
@@ -171,7 +143,7 @@ class Adb {
       temperature: _.toNumber(temperature[1]) / 10, // ℃
       voltage: _.toNumber(voltage[1]) / 1000, // V
       health: _.toNumber(health[1]) === 2,
-      powerSupply: _.toNumber(powerSupply) / 1000, // mA
+      current: _.toNumber(current) / 1000, // mA
     };
   }
 
@@ -180,16 +152,14 @@ class Adb {
    */
   async getControllerState() {
     await this.root();
-    const result = await this.adb.shell(
-      "dumpsys android.yvr.trackingservice --controllerState"
-    );
+    const result = await this.adb.shell("dumpsys android.yvr.trackingservice --controllerState");
     const leftController =
       /Left Controller Buttons:(\S+)\s+Touches:(\S+)\s+IndexTrigger:(\S+)\s+Thumbstick\[0\]:(\S+)\s+Thumbstick\[1\]:(\S+)\s+BatteryPercentRemaining:(\S+)\s+is_charging:(\S+)\s+Freq:(\S+)\s+SN:(\S+)\s+Version:(\S+)/.exec(
-        result
+        result,
       );
     const rightController =
       /Right Controller Buttons:(\S+)\s+Touches:(\S+)\s+IndexTrigger:(\S+)\s+Thumbstick\[0\]:(\S+)\s+Thumbstick\[1\]:(\S+)\s+BatteryPercentRemaining:(\S+)\s+is_charging:(\S+)\s+Freq:(\S+)\s+SN:(\S+)\s+Version:(\S+)/.exec(
-        result
+        result,
       );
     return [
       leftController
@@ -203,7 +173,7 @@ class Adb {
             batteryPercentRemaining: _.toNumber(leftController[6]),
             isCharging: leftController[7] !== "0",
             freq: _.toNumber(leftController[8]),
-            sn: leftController[9],
+            serialNo: leftController[9],
             version: leftController[10],
             connected: _.toNumber(leftController[6]) !== 0,
           }
@@ -219,12 +189,17 @@ class Adb {
             batteryPercentRemaining: _.toNumber(rightController[6]),
             isCharging: rightController[7] !== "0",
             freq: _.toNumber(rightController[8]),
-            sn: rightController[9],
+            serialNo: rightController[9],
             version: rightController[10],
             connected: _.toNumber(rightController[6]) !== 0,
           }
         : null,
     ];
+  }
+
+  async getDeviceVersion() {
+    const result = await this.adb.shell("getprop ro.fota.version");
+    return result;
   }
 
   /**
@@ -237,9 +212,12 @@ class Adb {
     }
     const controllerState = await this.getControllerState();
     const deviceBattery = await this.getDeviceBattery();
+    const deviceVersion = await this.getDeviceVersion();
+
     return {
       device: {
         serialNo: devices[0].udid,
+        version: deviceVersion,
         battery: deviceBattery,
       },
       controllers: controllerState,

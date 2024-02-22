@@ -5,11 +5,11 @@
         <n-tag :bordered="false" type="success">已连接</n-tag>
       </span>
       <span>
-        <span>头盔(10%)</span>
+        <span>头盔({{ datas?.device.battery.batteryPercentRemaining ?? 0 }}%)</span>
         <n-divider vertical />
-        <span>左手柄(10%)</span>
+        <span>左手柄({{ datas?.controllers[0]?.batteryPercentRemaining ?? 0 }}%)</span>
         <n-divider vertical />
-        <span>右手柄(10%)</span>
+        <span>右手柄({{ datas?.controllers[1]?.batteryPercentRemaining ?? 0 }}%)</span>
       </span>
     </div>
 
@@ -49,7 +49,7 @@
 <script setup lang="ts">
 import { NIcon } from "naive-ui";
 import type { MenuOption } from "naive-ui";
-import { h, ref } from "vue";
+import { h, onMounted, ref } from "vue";
 import type { Component } from "vue";
 import { RouterLink, useRouter } from "vue-router";
 import {
@@ -60,14 +60,17 @@ import {
 } from "@vicons/ionicons5";
 import hljs from "highlight.js/lib/core";
 import javascript from "highlight.js/lib/languages/javascript";
-import { startDeviceCheck, stopDeviceCheck, getDeviceStatus } from "./api/device";
 
 hljs.registerLanguage("javascript", javascript);
 
 const router = useRouter();
 
 function renderIcon(icon: Component) {
-  return () => h(NIcon, null, () => h(icon));
+  return () => {
+    return h(NIcon, null, {
+      default: () => h(icon),
+    });
+  };
 }
 
 const menuOptions: MenuOption[] = [
@@ -81,11 +84,11 @@ const menuOptions: MenuOption[] = [
     key: "action",
     icon: renderIcon(OperationIcon),
   },
-  // {
-  //   label: () => h(RouterLink, { to: "/app" }, () => "应用"),
-  //   key: "app",
-  //   icon: renderIcon(AppIcon),
-  // },
+  {
+    label: () => h(RouterLink, { to: "/app" }, () => "应用"),
+    key: "app",
+    icon: renderIcon(AppIcon),
+  },
   {
     label: () => h(RouterLink, { to: "/setting" }, () => "设置"),
     key: "setting",
@@ -103,8 +106,11 @@ router.afterEach((to, from, failure) => {
   }
 });
 
-const status = ref(getDeviceStatus());
+let datas = ref<DeviceStatus>();
 
+onMounted(async () => {
+  datas.value = await adb.getDeviceStatus();
+});
 </script>
 
 <style scoped>
