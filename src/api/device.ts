@@ -19,6 +19,28 @@ async function updateDeviceStatus() {
   // adb.getDeviceStatus();
 }
 
+export enum DeviceType {
+  // YVR
+  YVR_D1_Headset,
+  YVR_D2_Headset,
+  YVR_LeftController,
+  YVR_RightController,
+
+  // Quest
+  META_QUEST2_Headset,
+  META_QUEST2_LeftController,
+  META_QUEST2_RightController,
+
+  META_QUEST3_Headset,
+  META_QUEST3_LeftController,
+  META_QUEST3_RightController,
+
+  // Pico
+  PICO4_Headset,
+  PICO4_LeftController,
+  PICO4_RightController,
+}
+
 export async function startDeviceCheck() {
   deviceCheckEnable = true;
   await updateDeviceStatus();

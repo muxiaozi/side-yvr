@@ -1,17 +1,6 @@
 <template>
   <div style="display: flex; flex-direction: column; height: 100vh">
-    <div class="my-header">
-      <span>
-        <n-tag :bordered="false" type="success">已连接</n-tag>
-      </span>
-      <span>
-        <span>头盔({{ datas?.device.battery.batteryPercentRemaining ?? 0 }}%)</span>
-        <n-divider vertical />
-        <span>左手柄({{ datas?.controllers[0]?.batteryPercentRemaining ?? 0 }}%)</span>
-        <n-divider vertical />
-        <span>右手柄({{ datas?.controllers[1]?.batteryPercentRemaining ?? 0 }}%)</span>
-      </span>
-    </div>
+    <status-bar />
 
     <n-divider />
 
@@ -52,6 +41,7 @@ import type { MenuOption } from "naive-ui";
 import { h, onMounted, ref } from "vue";
 import type { Component } from "vue";
 import { RouterLink, useRouter } from "vue-router";
+import StatusBar from "@/components/StatusBar.vue";
 import {
   InformationCircleSharp as DeviceIcon,
   PrismSharp as OperationIcon,
@@ -113,13 +103,7 @@ onMounted(async () => {
 });
 </script>
 
-<style scoped>
-.my-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 8px 8px;
-}
+<style scoped lang="css">
 .n-divider:not(.n-divider--vertical) {
   margin: 0px;
 }
