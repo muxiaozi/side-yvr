@@ -44,5 +44,3 @@ utools.onPluginOut(() => {
   console.log("用户退出插件");
   stopDeviceCheck();
 });
-
-utools.onDbPull((docs: { _id: string; _rev: string }[]) => {});

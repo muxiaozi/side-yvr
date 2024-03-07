@@ -216,6 +216,7 @@ class Adb {
 
     return {
       device: {
+        connected: true,
         serialNo: devices[0].udid,
         version: deviceVersion,
         battery: deviceBattery,

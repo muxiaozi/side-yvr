@@ -73,7 +73,7 @@ interface Adb {
   getPackageListByType(type?: "system" | "user"): Promise<PackageInfo[]>;
 
   // 获取设备状态
-  getDeviceStatus(): Promise<DeviceStatus>;
+  getDeviceStatus(): Promise<DeviceStatus?>;
 }
 
 interface UToolsPayloadFile {

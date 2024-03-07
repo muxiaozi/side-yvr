@@ -1,13 +1,13 @@
 <template>
   <div class="my-header">
     <span>
-      <n-select style="width: 200px;" v-model:value="value" size="small" :options="options" />
+      <n-select style="width: 200px" v-model:value="value" size="small" :options="options" />
       <!-- <n-tag :bordered="false" type="success">已连接</n-tag> -->
     </span>
     <span>
-      <span>头盔(100%)</span>
+      <span>头盔(100%) {{ device.deviceStore.online ? "online" : "offline" }}</span>
       <n-divider vertical />
-      <span>左手柄(100%)</span>
+      <span>左手柄(100%) {{ device.deviceStore.serialNo }}</span>
       <n-divider vertical />
       <span>右手柄(100%)</span>
     </span>
@@ -15,8 +15,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
-const value = ref("2");
+import { onMounted, onUnmounted, ref } from "vue";
+import * as device from "../api/device";
+const value = 0;
 const options = ref([
   {
     value: "1",
@@ -31,6 +32,16 @@ const options = ref([
     label: "设备3",
   },
 ]);
+
+function deviceListener(ev: device.DeviceOnlineEvent) {
+  
+}
+
+onMounted(() => device.addEventListener("device_online", deviceListener));
+
+window.addEventListener("resize", () => {
+  console.log("resize");
+});
 </script>
 
 <style scoped lang="css">
