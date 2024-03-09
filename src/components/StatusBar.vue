@@ -33,15 +33,6 @@ const options = ref([
   },
 ]);
 
-function deviceListener(ev: device.DeviceOnlineEvent) {
-  
-}
-
-onMounted(() => device.addEventListener("device_online", deviceListener));
-
-window.addEventListener("resize", () => {
-  console.log("resize");
-});
 </script>
 
 <style scoped lang="css">
