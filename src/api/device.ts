@@ -71,19 +71,19 @@ export enum DeviceType {
 }
 
 export async function startDeviceCheck() {
-  deviceCheckEnable = true;
-  await updateDeviceStatus();
-  if (deviceCheckEnable) {
-    deviceCheckTimer = setTimeout(startDeviceCheck, 1000);
-  }
+  // deviceCheckEnable = true;
+  // await updateDeviceStatus();
+  // if (deviceCheckEnable) {
+  //   deviceCheckTimer = setTimeout(startDeviceCheck, 1000);
+  // }
 }
 
 export function stopDeviceCheck() {
-  if (deviceCheckTimer !== 0) {
-    clearTimeout(deviceCheckTimer);
-    deviceCheckTimer = 0;
-    console.log("stop check device");
-  }
+  // if (deviceCheckTimer !== 0) {
+  //   clearTimeout(deviceCheckTimer);
+  //   deviceCheckTimer = 0;
+  //   console.log("stop check device");
+  // }
 }
 
 export function addEventListener<K extends keyof DeviceEventMap>(type: K, listener: (ev: DeviceEventMap[K]) => any) {

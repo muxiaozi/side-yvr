@@ -13,7 +13,7 @@ app.mount("#app");
 
 // 进入插件
 utools.onPluginEnter(async ({ code, type, payload }) => {
-  console.log("用户进入插件", code, type, payload);
+  console.log(`onPluginEnter, code: ${code}, type: ${type}, payload: ${payload}`);
   startDeviceCheck();
   switch (code) {
     case "sideyvr": {

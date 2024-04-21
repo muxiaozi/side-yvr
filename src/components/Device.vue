@@ -54,11 +54,6 @@ const datas: Item[] = [
   },
 ];
 
-let data = ref<DeviceStatus>();
-
-onMounted(async () => {
-  data.value = await adb.getDeviceStatus();
-});
 </script>
 
 <style scoped lang="css"></style>

@@ -17,7 +17,7 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted, ref } from "vue";
 import * as device from "../api/device";
-const value = 0;
+const value = ref("1");
 const options = ref([
   {
     value: "1",

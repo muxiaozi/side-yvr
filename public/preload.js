@@ -19,6 +19,7 @@ async function runCommand(command) {
     });
     return result.stdout;
   } catch (err) {
+    console.error(err.message);
     throw err;
   }
 }
@@ -44,7 +45,16 @@ async function writeFile(path, content) {
   });
 }
 
+async function findPath(cmd) {
+  if (process.platform === "win32") {
+    return await runCommand(["where", cmd]);
+  } else {
+    return await runCommand(["which", cmd]);
+  }
+}
+
 window.adb = new Adb();
 window.runCommand = runCommand;
 window.readFile = readFile;
 window.writeFile = writeFile;
+window.findPath = findPath;

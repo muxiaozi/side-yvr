@@ -96,11 +96,6 @@ router.afterEach((to, from, failure) => {
   }
 });
 
-let datas = ref<DeviceStatus>();
-
-onMounted(async () => {
-  datas.value = await adb.getDeviceStatus();
-});
 </script>
 
 <style scoped lang="css">

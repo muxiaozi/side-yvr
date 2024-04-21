@@ -1,39 +1,94 @@
-const { ADB } = require("appium-adb");
 const path = require("path");
 const fs = require("fs");
 const _ = require("lodash");
+const { exec } = require("teen_process");
 
 class Adb {
-  constructor() {
-    ADB.createADB()
-      .then((adb) => {
-        this.adb = adb;
-      })
-      .catch((err) => {
-        console.error(`init adb fail: ${err.message}`);
+  async exec(command) {
+    try {
+      command = _.isArray(command) ? command : command.split(/\s+/);
+      console.log(">>> ", command)
+      const result = await exec("adb", command, {
+        timeout: 10000,
+        shell: true,
       });
+      return result.stdout;
+    } catch (err) {
+      console.error(err);
+      throw err;
+    }
+  }
+
+  async shell(command) {
+    command = _.isArray(command) ? command : command.split(/\s+/);
+    return await this.exec(["shell", ...command]);
+  }
+
+  async waitForDevice() {
+    try {
+      await exec("adb", ["wait-for-device"], {
+        shell: true,
+        timeout: 3000,
+      });
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  async install(apkPath, options) {
+    try {
+      let command = ["install"];
+      if (options.grantPermissions) {
+        command.push("-g");
+      }
+      command.push(apkPath);
+      await exec("adb", command, {
+        timeout: 10000,
+        shell: true,
+      });
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  async getConnectedDevices() {
+    try {
+      const result = await exec("adb", ["devices"], {
+        timeout: 10000,
+        shell: true,
+      });
+      return result.stdout
+        .split("\n")
+        .slice(1)
+        .map((line) => {
+          const [udid, state] = line.split(/\s+/);
+          return { udid, state };
+        });
+    } catch (err) {
+      throw err;
+    }
   }
 
   async root() {
     try {
-      if ((await this.adb.shell("getprop service.dev.mode")) === "1") {
+      if ((await this.shell("getprop service.dev.mode")) === "1") {
         console.log("already root");
         return;
       }
 
       let result;
-      result = await this.adb.shell("am broadcast -a com.yvr.demo.action.dev.mode --include-stopped-packages");
+      result = await this.shell("am broadcast -a com.yvr.demo.action.dev.mode --include-stopped-packages");
       console.log("root[1] result: ", result);
-      result = await this.adb.shell("setprop service.dev.mode 1");
+      result = await this.shell("setprop service.dev.mode 1");
       console.log("root[2] result: ", result);
-      await this.adb.waitForDevice();
+      await this.waitForDevice();
     } catch (e) {
-      console.error(e.message);
+      console.error(e.stderr);
     }
   }
 
   async installApk(apkPath) {
-    await this.adb.install(apkPath, {
+    await this.install(apkPath, {
       grantPermissions: true,
     });
   }
@@ -48,7 +103,7 @@ class Adb {
       return [...(await this.getPackageListByType("user")), ...(await this.getPackageListByType("system"))];
     }
 
-    let appsStr = await this.adb.shell(`pm list packages -f ${type == "user" ? "-3" : "-s"}`);
+    let appsStr = await this.shell(`pm list packages -f ${type == "user" ? "-3" : "-s"}`);
     return appsStr.split("\n").map((line) => {
       const [, apkPath, packageName] = line.match(/package:(.+)=([^\s]+)/);
       return { apkPath, packageName, type };
@@ -63,7 +118,7 @@ class Adb {
 
     let aaptDumpBadgingStr;
     try {
-      aaptDumpBadgingStr = await this.adb.shell(`/data/local/tmp/aapt-arm-pie dump badging ${packageInfo.apkPath}`);
+      aaptDumpBadgingStr = await this.shell(`/data/local/tmp/aapt-arm-pie dump badging ${packageInfo.apkPath}`);
     } catch (e) {
       aaptDumpBadgingStr = e.stdout;
       console.error(e.message);
@@ -90,8 +145,8 @@ class Adb {
 
     if (iconPath && [".png", ".webp"].includes(path.extname(iconPath))) {
       try {
-        await this.adb.shell(`mkdir -p /data/local/tmp/sideyvr_icons`);
-        await this.adb.shell(`unzip -o -d /data/local/tmp/sideyvr_icons/ ${packageInfo.apkPath} ${iconPath}`);
+        await this.shell(`mkdir -p /data/local/tmp/sideyvr_icons`);
+        await this.shell(`unzip -o -d /data/local/tmp/sideyvr_icons/ ${packageInfo.apkPath} ${iconPath}`);
         let localPath = path.resolve(
           utools.getPath("temp"),
           "sideyvr",
@@ -99,7 +154,7 @@ class Adb {
           path.parse(iconPath).base,
         );
         fs.mkdirSync(path.dirname(localPath), { recursive: true });
-        await this.adb.pull(`/data/local/tmp/sideyvr_icons/${iconPath}`, localPath);
+        await this.pull(`/data/local/tmp/sideyvr_icons/${iconPath}`, localPath);
         iconPath = localPath;
       } catch (e) {
         console.error(e.message);
@@ -120,22 +175,22 @@ class Adb {
   }
 
   async startLogcat() {
-    await this.adb.startLogcat();
-    this.adb.setLogcatListener((line) => console.log(line));
+    await this.startLogcat();
+    this.setLogcatListener((line) => console.log(line));
   }
 
   /**
    * 获取设备电量
    */
   async getDeviceBattery() {
-    const result = await this.adb.shell("dumpsys battery");
+    const result = await this.shell("dumpsys battery");
     const chargeCounter = /Charge counter: (\d+)/.exec(result);
     const isCharging = /status: (\d+)/.exec(result);
     const level = /level: (\d+)/.exec(result);
     const temperature = /temperature: (\d+)/.exec(result);
     const voltage = /^  voltage: (\d+)/m.exec(result);
     const health = /health: (\w+)/.exec(result);
-    const current = await this.adb.shell("cat /sys/class/power_supply/battery/current_now");
+    const current = await this.shell("cat /sys/class/power_supply/battery/current_now");
     return {
       changeCounter: _.toNumber(chargeCounter[1]),
       isCharging: _.toNumber(isCharging[1]) === 2,
@@ -152,7 +207,7 @@ class Adb {
    */
   async getControllerState() {
     await this.root();
-    const result = await this.adb.shell("dumpsys android.yvr.trackingservice --controllerState");
+    const result = await this.shell("dumpsys android.yvr.trackingservice --controllerState");
     const leftController =
       /Left Controller Buttons:(\S+)\s+Touches:(\S+)\s+IndexTrigger:(\S+)\s+Thumbstick\[0\]:(\S+)\s+Thumbstick\[1\]:(\S+)\s+BatteryPercentRemaining:(\S+)\s+is_charging:(\S+)\s+Freq:(\S+)\s+SN:(\S+)\s+Version:(\S+)/.exec(
         result,
@@ -198,7 +253,7 @@ class Adb {
   }
 
   async getDeviceVersion() {
-    const result = await this.adb.shell("getprop ro.fota.version");
+    const result = await this.shell("getprop ro.fota.version");
     return result;
   }
 
@@ -206,7 +261,7 @@ class Adb {
    * 获取设备状态
    */
   async getDeviceStatus() {
-    const devices = await this.adb.getConnectedDevices();
+    const devices = await this.getConnectedDevices();
     if (devices.length === 0) {
       return null;
     }

@@ -88,3 +88,4 @@ declare var adb: Adb;
 declare function runCommand(command: string | string[]): Promise<string>;
 declare function readFile(path: string): Promise<string>;
 declare function writeFile(path: string, content: string): Promise<void>;
+declare function findPath(cmd: string): Promise<string>;
