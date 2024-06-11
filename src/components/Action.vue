@@ -84,12 +84,6 @@ import {
   generateActionId,
   saveActions,
 } from "../api/action";
-import {
-  Command,
-  generateCommandId,
-  saveCommands,
-  loadCommands,
-} from "../api/command";
 import { getPlatform, Platform } from "../api/app";
 import { RunManager } from "../api/run";
 import _ from "lodash";

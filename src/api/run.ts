@@ -1,5 +1,4 @@
 import { Action } from "./action";
-import md5 from "crypto-js/md5";
 
 export type RunStatus = "wait" | "process" | "finish" | "error";
 
